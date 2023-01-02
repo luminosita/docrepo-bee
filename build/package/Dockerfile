@@ -2,7 +2,7 @@ ARG BASE_IMAGE=alpine
 
 FROM golang:1.19.4-alpine3.16 AS builder
 
-WORKDIR /usr/local/src/dex
+WORKDIR /usr/local/src/bee
 
 RUN apk add --no-cache --update alpine-sdk ca-certificates openssl
 
@@ -15,18 +15,16 @@ ENV GOOS=${TARGETOS} GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT}
 ARG GOPROXY
 
 COPY go.mod go.sum ./
-COPY api/v2/go.mod api/v2/go.sum ./api/v2/
 RUN go mod download
 
 COPY . .
 
-RUN make release-binary
-
+RUN make build
 FROM alpine:3.17.0 AS stager
 
-RUN mkdir -p /var/dex
-RUN mkdir -p /etc/dex
-COPY config.docker.yaml /etc/dex/
+RUN mkdir -p /var/bee
+RUN mkdir -p /etc/bee
+COPY config.docker.yaml /etc/bee/
 
 FROM alpine:3.17.0 AS gomplate
 
@@ -53,20 +51,20 @@ FROM $BASE_IMAGE
 # See https://go.dev/src/crypto/x509/root_linux.go for Go root CA bundle locations.
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-COPY --from=stager --chown=1001:1001 /var/dex /var/dex
-COPY --from=stager --chown=1001:1001 /etc/dex /etc/dex
+COPY --from=stager --chown=1001:1001 /var/bee /var/bee
+COPY --from=stager --chown=1001:1001 /etc/bee /etc/bee
 
 # Copy module files for CVE scanning / dependency analysis.
-COPY --from=builder /usr/local/src/dex/go.mod /usr/local/src/dex/go.sum /usr/local/src/dex/
-COPY --from=builder /usr/local/src/dex/api/v2/go.mod /usr/local/src/dex/api/v2/go.sum /usr/local/src/dex/api/v2/
+COPY --from=builder /usr/local/src/bee/go.mod /usr/local/src/bee/go.sum /usr/local/src/bee/
+COPY --from=builder /usr/local/src/bee/api/v2/go.mod /usr/local/src/bee/api/v2/go.sum /usr/local/src/bee/api/v2/
 
-COPY --from=builder /go/bin/dex /usr/local/bin/dex
-COPY --from=builder /go/bin/docker-entrypoint /usr/local/bin/docker-entrypoint
-COPY --from=builder /usr/local/src/dex/web /srv/dex/web
+COPY --from=builder /go/bin/bee /usr/local/bin/bee
+#COPY --from=builder /go/bin/docker-entrypoint /usr/local/bin/docker-entrypoint
+COPY --from=builder /usr/local/src/bee/web /srv/bee/web
 
 COPY --from=gomplate /usr/local/bin/gomplate /usr/local/bin/gomplate
 
 USER 1001:1001
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
-CMD ["dex", "serve", "/etc/dex/config.docker.yaml"]
+#ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
+CMD ["bee", "serve", "/etc/bee/config.docker.yaml"]

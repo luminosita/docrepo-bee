@@ -6,17 +6,17 @@ import (
 	"github.com/luminosita/bee/internal/interfaces/use-cases/documents"
 )
 
-type GetDocumentHandler struct {
-	cd documents.GetDocumenter
+type GetAllDocumentsHandler struct {
+	cd documents.GetAllDocumenter
 }
 
-func NewGetDocumentHandler(cd documents.GetDocumenter) *GetDocumentHandler {
-	return &GetDocumentHandler{
+func NewGetAllDocumentsHandler(cd documents.GetAllDocumenter) *GetAllDocumentsHandler {
+	return &GetAllDocumentsHandler{
 		cd: cd,
 	}
 }
 
-// GetDocument godoc
+// GetAllDocuments godoc
 // @Summary      Show something
 // @Description  dummy GET method
 // @Tags         documents
@@ -28,10 +28,10 @@ func NewGetDocumentHandler(cd documents.GetDocumenter) *GetDocumentHandler {
 // @Failure      404  {object}  error
 // @Failure      500  {object}  error
 // @Router       /documents [get]
-func (h *GetDocumentHandler) Handle(req *http.HttpRequest) (*http.HttpResponse, error) {
+func (h *GetAllDocumentsHandler) Handle(req *http.HttpRequest) (*http.HttpResponse, error) {
 	documentId := req.Params["docId"]
 
-	res, err := h.cd.Execute(&documents.GetDocumenterRequest{
+	res, err := h.cd.Execute(&documents.GetAllDocumenterRequest{
 		DocumentId: documentId,
 	})
 
@@ -44,6 +44,6 @@ func (h *GetDocumentHandler) Handle(req *http.HttpRequest) (*http.HttpResponse, 
 	return nil, nil
 }
 
-func (h *GetDocumentHandler) Model(req *http.HttpRequest) *entities.Document {
+func (h *GetAllDocumentsHandler) Model(req *http.HttpRequest) *entities.Document {
 	return nil
 }

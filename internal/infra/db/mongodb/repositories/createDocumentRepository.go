@@ -4,33 +4,25 @@ import (
 	"context"
 	"github.com/luminosita/bee/internal/infra/db/mongodb"
 	"github.com/luminosita/bee/internal/interfaces/respositories/documents"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type DocumentRepository struct {
+type CreateDocumentRepository struct {
 	ctx context.Context
-	*mongo.Collection
 }
 
-func NewDocumentRepository(ctx context.Context) *DocumentRepository {
-	return &DocumentRepository{
+func NewCreateDocumentRepository(ctx context.Context) *CreateDocumentRepository {
+	return &CreateDocumentRepository{
 		ctx: ctx,
 	}
 }
 
-func (r *DocumentRepository) CreateDocument(docData *documents.RepoRequest) (*documents.RepoResponse, error) {
-	_, err := r.getCollection().InsertOne(r.ctx, docData) //, createdAt: new Date());
+func (r *CreateDocumentRepository) CreateDocument(
+	docData *documents.CreateDocumentRepositorerRequest) (*documents.CreateDocumentRepositorerResponse, error) {
+	col := mongodb.GetDbCollection(r.ctx)
+	_, err := col.InsertOne(r.ctx, docData) //, createdAt: new Date());
 	if err != nil {
 		return nil, err
 	}
 
 	return nil, nil
-}
-
-func (r *DocumentRepository) getCollection() *mongo.Collection {
-	if r.Collection == nil {
-		r.Collection = mongodb.GetDbCollection(r.ctx)
-	}
-
-	return r.Collection
 }

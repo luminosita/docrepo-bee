@@ -1,13 +1,14 @@
 package documents
 
-import usecases "github.com/luminosita/bee/internal/interfaces/use-cases"
+import "github.com/luminosita/bee/common/interfaces"
 
-type Request = struct {
-	UserId string
-	Body   string
+type CreateDocumenterRequest = struct {
+	Content string
 }
-type Response = any
+type CreateDocumenterResponse = struct {
+	DocumentId string
+}
 
 type CreateDocumenter interface {
-	usecases.UseCaser[*Request, *Response]
+	interfaces.UseCaser[*CreateDocumenterRequest, *CreateDocumenterResponse]
 }

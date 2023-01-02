@@ -1,9 +1,14 @@
 package documents
 
-type RepoRequest = struct {
-}
-type RepoResponse = any
+import "github.com/luminosita/bee/internal/domain/entities"
 
-type CreateDocumentRepositorer interface {
-	CreateDocument(req *RepoRequest) (*RepoResponse, error)
+type GetDocumentRepositorerRequest = struct {
+	DocumentID string
+}
+type GetDocumentRepositorerResponse = struct {
+	Document *entities.Document
+}
+
+type GetDocumentRepositorer interface {
+	GetDocument(req *GetDocumentRepositorerRequest) (*GetDocumentRepositorerResponse, error)
 }

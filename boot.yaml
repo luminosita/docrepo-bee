@@ -1,0 +1,19 @@
+config:
+  - name: bee-config
+    path: "configs/default.yaml"
+fiber:
+  - name: bee                                              # Required
+    port: 8080                                             # Required
+    enabled: true                                          # Required
+    commonService:
+      enabled: true                                        # Optional, default: false
+    sw:
+      enabled: true                                        # Optional, default: false
+    docs:
+      enabled: true
+#mongo:
+#  - name: "bee-mongo"                            # Required
+#    enabled: true                               # Required
+#    simpleURI: "mongodb://localhost:27017"      # Required
+#    database:
+#      - name: "bee"

@@ -1,12 +1,13 @@
 package documents
 
-type GetDocumentRepositorerRequest = struct {
-	DocumentID string
+import "github.com/luminosita/bee/internal/domain/entities"
+
+type GetAllDocumentsRepositorerRequest = struct {
 }
-type GetDocumentRepositorerResponse = struct {
-	Content string
+type GetAllDocumentsRepositorerResponse = struct {
+	Documents []*entities.Document
 }
 
-type GetDocumentRepositorer interface {
-	GetDocument(req *GetDocumentRepositorerRequest) (*GetDocumentRepositorerResponse, error)
+type GetAllDocumentsRepositorer interface {
+	GetAllDocuments(req *GetAllDocumentsRepositorerRequest) (*GetAllDocumentsRepositorerResponse, error)
 }

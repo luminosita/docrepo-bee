@@ -4,5 +4,5 @@ type HttpResponse struct {
 	StatusCode int
 	Body       string
 
-	Errors []*ErrorResponse
+	Errors []error
 }

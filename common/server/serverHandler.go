@@ -24,6 +24,6 @@ type Route struct {
 	Handler handlers.Handler
 }
 
-type Server interface {
+type ServerHandler interface {
 	Routes(ctx context.Context) []*Route
 }

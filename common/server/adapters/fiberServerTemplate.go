@@ -35,7 +35,7 @@ type LoggerConfig struct {
 }
 
 type FiberServerAdapter struct {
-	server server.Server
+	handler server.ServerHandler
 
 	boot *rkboot.Boot
 
@@ -45,11 +45,11 @@ type FiberServerAdapter struct {
 }
 
 // NewServer constructs a server from the provided config.
-func NewFiberServerAdapter(ctx context.Context, server server.Server) (*FiberServerAdapter, error) {
-	return newFiberServerAdapter(ctx, server)
+func NewFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*FiberServerAdapter, error) {
+	return newFiberServerAdapter(ctx, handler)
 }
 
-func newFiberServerAdapter(ctx context.Context, srv server.Server) (*FiberServerAdapter, error) {
+func newFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*FiberServerAdapter, error) {
 	// Create a new boot instance.
 	boot := rkboot.NewBoot()
 
@@ -77,12 +77,12 @@ func newFiberServerAdapter(ctx context.Context, srv server.Server) (*FiberServer
 		boot:       boot,
 		baseURL:    baseUrl,
 		FiberEntry: entry,
-		server:     srv,
+		handler:    handler,
 	}
 
 	//	setupMiddlewares(app);
 
-	routes := srv.Routes(ctx)
+	routes := handler.Routes(ctx)
 
 	for _, v := range routes {
 		switch v.Method {

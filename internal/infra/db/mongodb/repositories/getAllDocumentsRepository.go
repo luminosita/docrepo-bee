@@ -2,33 +2,41 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 	"github.com/luminosita/bee/internal/infra/db/mongodb"
 	"github.com/luminosita/bee/internal/interfaces/respositories/documents"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson"
+	"log"
 )
 
-type GetDocumentRepository struct {
+type GetAllDocumentsRepository struct {
 	ctx context.Context
-	*mongo.Collection
 }
 
-func NewGetDocumentRepository(ctx context.Context) *GetDocumentRepository {
-	return &GetDocumentRepository{
+func NewGetAllDocumentsRepository(ctx context.Context) *GetAllDocumentsRepository {
+	return &GetAllDocumentsRepository{
 		ctx: ctx,
 	}
 }
 
-func (r *GetDocumentRepository) GetDocument(
-	docData *documents.GetDocumentRepositorerRequest) (*documents.GetDocumentRepositorerResponse, error) {
-	_ = r.getCollection().FindOne(r.ctx, docData) //, createdAt: new Date());
-
-	return nil, nil
-}
-
-func (r *GetDocumentRepository) getCollection() *mongo.Collection {
-	if r.Collection == nil {
-		r.Collection = mongodb.GetDbCollection(r.ctx)
+func (r *GetAllDocumentsRepository) GetAllDocuments(
+	docData *documents.GetAllDocumentsRepositorerRequest) (*documents.GetAllDocumentsRepositorerResponse, error) {
+	col := mongodb.GetDbCollection(r.ctx)
+	cursor, err := col.Find(r.ctx, docData)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	return r.Collection
+	// Get a list of all returned documents and print them out.
+	//See the mongo.Cursor documentation for more examples of using cursors.
+	var results []bson.M
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, result := range results {
+		fmt.Println(result)
+	}
+
+	return nil, nil
 }

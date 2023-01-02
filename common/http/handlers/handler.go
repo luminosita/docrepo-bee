@@ -1,7 +1,7 @@
-package interfaces
+package handlers
 
-import "github.com/luminosita/bee/internal/infra/http"
+import "github.com/luminosita/bee/common/http"
 
 type Handler interface {
-	Process(req *http.HttpRequest) (*http.HttpResponse, error)
+	Handle(req *http.HttpRequest) (*http.HttpResponse, error)
 }

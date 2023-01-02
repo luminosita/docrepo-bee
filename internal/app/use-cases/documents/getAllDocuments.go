@@ -5,21 +5,21 @@ import (
 	documents2 "github.com/luminosita/bee/internal/interfaces/use-cases/documents"
 )
 
-type GetDocument struct {
-	repo documents.GetDocumentRepositorer
+type GetAllDocuments struct {
+	repo documents.GetAllDocumentsRepositorer
 }
 
-func NewGetDocument(r documents.GetDocumentRepositorer) documents2.GetDocumenter {
-	return &GetDocument{
+func NewGetAllDocuments(r documents.GetAllDocumentsRepositorer) documents2.GetAllDocumenter {
+	return &GetAllDocuments{
 		repo: r,
 	}
 }
 
-func (d *GetDocument) Execute(
-	documentData *documents2.GetDocumenterRequest) (*documents2.GetDocumenterResponse, error) {
-	data := &documents.GetDocumentRepositorerRequest{}
+func (d *GetAllDocuments) Execute(
+	documentData *documents2.GetAllDocumenterRequest) (*documents2.GetAllDocumenterResponse, error) {
+	data := &documents.GetAllDocumentsRepositorerRequest{}
 
-	_, err := d.repo.GetDocument(data)
+	_, err := d.repo.GetAllDocuments(data)
 
 	if err != nil {
 		return nil, err

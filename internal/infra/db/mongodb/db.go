@@ -1,4 +1,4 @@
-package config
+package mongodb
 
 import (
 	"context"
@@ -6,16 +6,23 @@ import (
 	rkmongo "github.com/rookie-ninja/rk-db/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"sync"
 )
 
-// TODO: DB connection singelton
+const DOCUMENT_COLLECTION string = "documents"
+
 var (
-	// GlobalAppCtx global application context
-	GlobalBeeCtx = &beeContext{}
+	once sync.Once
+	db   *mongo.Database
 )
 
-type beeContext struct {
-	documentCollection *mongo.Collection
+func GetDbCollection(ctx context.Context) *mongo.Collection {
+	once.Do(func() { // <-- atomic, does not allow repeating
+		db := rkmongo.GetMongoDB("bee-mongo", "bee")
+		createCollection(ctx, db, DOCUMENT_COLLECTION)
+	})
+
+	return db.Collection(DOCUMENT_COLLECTION)
 }
 
 func createCollection(ctx context.Context, db *mongo.Database, name string) {
@@ -24,14 +31,4 @@ func createCollection(ctx context.Context, db *mongo.Database, name string) {
 	if err != nil {
 		fmt.Println("collection exists may be, continue")
 	}
-}
-
-func (bc *beeContext) GetDbCollection(ctx context.Context) *mongo.Collection {
-	if bc.documentCollection == nil {
-		db := rkmongo.GetMongoDB("bee-mongo", "bee")
-		createCollection(ctx, db, "meta")
-		bc.documentCollection = db.Collection("documents")
-	}
-
-	return bc.documentCollection
 }

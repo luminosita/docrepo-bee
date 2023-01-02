@@ -2,14 +2,22 @@ package handlers
 
 import (
 	"context"
-	"github.com/luminosita/bee/internal/infra/http/handlers"
+	"github.com/luminosita/bee/common/http/handlers"
+	use_cases "github.com/luminosita/bee/internal/bee/factories/use-cases"
 	"github.com/luminosita/bee/internal/infra/http/handlers/documents"
-	validatoradapters "github.com/luminosita/bee/internal/infra/http/validator-adapters"
-	documents2 "github.com/luminosita/bee/internal/server/factories/use-cases/documents"
 )
 
-func MakeCreateDocumentHandler(ctx context.Context) *handlers.BaseHandler {
-	useCase := documents2.MakeCreateDocument(ctx)
-	validation := validatoradapters.NewValidatorAdapter()
-	return documents.NewCreateDocumentHandler(useCase, validation)
+func MakeGetDocumentHandler(ctx context.Context) handlers.Handler {
+	useCase := use_cases.MakeGetDocument(ctx)
+	return documents.NewGetDocumentHandler(useCase)
+}
+
+func MakeGetAllDocumentsHandler(ctx context.Context) handlers.Handler {
+	useCase := use_cases.MakeGetAllDocuments(ctx)
+	return documents.NewGetAllDocumentsHandler(useCase)
+}
+
+func MakeCreateDocumentHandler(ctx context.Context) handlers.Handler {
+	useCase := use_cases.MakeCreateDocument(ctx)
+	return documents.NewCreateDocumentHandler(useCase)
 }

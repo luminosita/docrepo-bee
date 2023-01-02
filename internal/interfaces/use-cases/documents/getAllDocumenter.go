@@ -4,13 +4,13 @@ import (
 	"github.com/luminosita/bee/common/interfaces"
 )
 
-type GetDocumenterRequest = struct {
+type GetAllDocumenterRequest = struct {
 	DocumentId string
 }
-type GetDocumenterResponse = struct {
+type GetAllDocumenterResponse = struct {
 	Content string
 }
 
-type GetDocumenter interface {
-	interfaces.UseCaser[*GetDocumenterRequest, *GetDocumenterResponse]
+type GetAllDocumenter interface {
+	interfaces.UseCaser[*GetAllDocumenterRequest, *GetAllDocumenterResponse]
 }

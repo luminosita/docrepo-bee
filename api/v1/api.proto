@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/luminosita/bee/api";
+
+message Document {
+  string id = 1;
+}
+

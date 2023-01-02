@@ -1,9 +1,5 @@
-package validations
-
-import (
-	"github.com/luminosita/bee/common/errors"
-)
+package validators
 
 type Validator[T any] interface {
-	Validate(T) []*errors.Error
+	Validate(*T) []error
 }

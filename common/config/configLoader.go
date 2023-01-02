@@ -1,5 +1,6 @@
-package main
+package config
 
-func main() {
-
+type ConfigLoader[T any] interface {
+	ReadConfig(string, *T) error
+	Validate(*T) []error
 }

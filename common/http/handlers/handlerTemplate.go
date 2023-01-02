@@ -6,28 +6,32 @@ import (
 	"github.com/luminosita/bee/common/validators/adapters"
 )
 
-type HandlerTemplate[T any] struct {
-	validator validators.Validator[T]
-	Handler[T]
+type HandlerTemplate struct {
+	validator validators.Validator[any]
+	Handler
 }
 
-func NewHandlerTemplate[T any](h Handler[T]) *HandlerTemplate[T] {
-	return &HandlerTemplate[T]{
-		validator: adapters.NewValidatorAdapter[T](),
+func NewHandlerTemplate(h Handler) *HandlerTemplate {
+	return &HandlerTemplate{
+		validator: adapters.NewValidatorAdapter[any](),
 		Handler:   h,
 	}
 }
 
-func (bh *HandlerTemplate[T]) Process(req *http.HttpRequest) *http.HttpResponse {
-	res := bh.Model(req)
-	if res != nil {
-		err := bh.validator.Validate(res)
-		if err != nil {
-			return http.BadValidation(err)
-		}
+func (bh *HandlerTemplate) Process(req *http.HttpRequest) (*http.HttpResponse, error) {
+	//m := bh.Model(req)
+	//
+	//if m != nil {
+	//	err := bh.validator.Validate(m)
+	//	if err != nil {
+	//		return http.BadValidation(err), errors.New("Validation Failed")
+	//	}
+	//}
+
+	res, err := bh.Handle(req)
+	if err != nil {
+		return nil, err
 	}
 
-	bh.Handle(req)
-
-	return http.Ok("")
+	return http.Ok(res.Body), nil
 }

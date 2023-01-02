@@ -15,8 +15,9 @@ func NewCreateDocument(r documents.CreateDocumentRepositorer) documents2.CreateD
 	}
 }
 
-func (d *CreateDocument) Execute(documentData *documents2.Request) (*documents2.Response, error) {
-	data := &documents.RepoRequest{}
+func (d *CreateDocument) Execute(
+	documentData *documents2.CreateDocumenterRequest) (*documents2.CreateDocumenterResponse, error) {
+	data := &documents.CreateDocumentRepositorerRequest{}
 
 	_, err := d.repo.CreateDocument(data)
 

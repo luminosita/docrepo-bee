@@ -1,13 +1,16 @@
 package documents
 
-import "github.com/luminosita/bee/common/interfaces"
+import (
+	"github.com/luminosita/bee/common/interfaces"
+)
 
-type Request = struct {
-	UserId string
-	Body   string
+type GetDocumenterRequest = struct {
+	DocumentId string
 }
-type Response = any
+type GetDocumenterResponse = struct {
+	Content string
+}
 
-type CreateDocumenter interface {
-	interfaces.UseCaser[*Request, *Response]
+type GetDocumenter interface {
+	interfaces.UseCaser[*GetDocumenterRequest, *GetDocumenterResponse]
 }
