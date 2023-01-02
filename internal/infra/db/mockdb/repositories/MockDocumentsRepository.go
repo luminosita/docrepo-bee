@@ -17,7 +17,7 @@ func MakeMockDocumentsRepository(ctx context.Context) *MockDocumentsRepository {
 }
 
 func (r *MockDocumentsRepository) GetAllDocuments(
-	docData *documents.GetAllDocumentsRepositorerRequest) (*documents.GetAllDocumentsRepositorerResponse, error) {
+	*documents.GetAllDocumentsRepositorerRequest) (*documents.GetAllDocumentsRepositorerResponse, error) {
 
 	return &documents.GetAllDocumentsRepositorerResponse{
 		Documents: append(make([]*entities.Document, 0), &entities.Document{
@@ -32,13 +32,13 @@ func (r *MockDocumentsRepository) GetDocument(
 	return &documents.GetDocumentRepositorerResponse{
 		Document: &entities.Document{
 			Name:       "MockName",
-			DocumentId: "MockId",
+			DocumentId: docData.DocumentID,
 		},
 	}, nil
 }
 
 func (r *MockDocumentsRepository) CreateDocument(
-	docData *documents.CreateDocumentRepositorerRequest) (*documents.CreateDocumentRepositorerResponse, error) {
+	*documents.CreateDocumentRepositorerRequest) (*documents.CreateDocumentRepositorerResponse, error) {
 	return &documents.CreateDocumentRepositorerResponse{
 		DocumentId: "MockId",
 	}, nil

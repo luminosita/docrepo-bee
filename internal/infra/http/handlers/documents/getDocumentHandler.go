@@ -26,7 +26,7 @@ func NewGetDocumentHandler(cd documents.GetDocumenter) *GetDocumentHandler {
 // @Failure      400  {object}  error
 // @Failure      404  {object}  error
 // @Failure      500  {object}  error
-// @Router       /documents/:id [get]
+// @Router       /documents/{id} [get]
 func (h *GetDocumentHandler) Handle(req *http.HttpRequest) (*http.HttpResponse, error) {
 	documentId := req.Params["id"]
 
