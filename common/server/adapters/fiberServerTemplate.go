@@ -3,6 +3,7 @@ package adapters
 import (
 	"context"
 	"errors"
+	"fmt"
 	adapters3 "github.com/luminosita/bee/common/config/adapters"
 	"github.com/luminosita/bee/common/http/adapters"
 	"github.com/luminosita/bee/common/log"
@@ -10,6 +11,7 @@ import (
 	rkboot "github.com/rookie-ninja/rk-boot/v2"
 	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
 	rkfiber "github.com/rookie-ninja/rk-fiber/boot"
+	"github.com/spf13/viper"
 	"net/url"
 	"runtime"
 )
@@ -18,9 +20,9 @@ import (
 //
 // Multiple servers using the same storage are expected to be configured identically.
 type Config struct {
-	Version string
+	Version string `json:"version" validate:"required,oneof=dev stage prod""`
 
-	BaseUrl string
+	BaseUrl string `json:"baseUrl" validate:"required"`
 
 	logCfg LoggerConfig `json:"logger"`
 }
@@ -28,13 +30,13 @@ type Config struct {
 // Logger holds configuration required to customize logging for dex.
 type LoggerConfig struct {
 	// Level sets logging level severity.
-	Level string `json:"level"`
+	Level string `json:"level" validate:"omitempty,oneof=error debug info"`
 
 	// Format specifies the format to be used for logging.
-	Format string `json:"format"`
+	Format string `json:"format" validate:"omitempty,oneof=text json"`
 }
 
-type FiberServerAdapter struct {
+type FiberServerTemplate struct {
 	handler server.ServerHandler
 
 	boot *rkboot.Boot
@@ -45,16 +47,16 @@ type FiberServerAdapter struct {
 }
 
 // NewServer constructs a server from the provided config.
-func NewFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*FiberServerAdapter, error) {
+func NewFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*FiberServerTemplate, error) {
 	return newFiberServerAdapter(ctx, handler)
 }
 
-func newFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*FiberServerAdapter, error) {
+func newFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*FiberServerTemplate, error) {
 	// Create a new boot instance.
 	boot := rkboot.NewBoot()
 
 	// Bootstrap
-	boot.Bootstrap(context.TODO())
+	boot.Bootstrap(context.Background())
 
 	// Register handler
 	entry := rkfiber.GetFiberEntry("bee")
@@ -64,8 +66,6 @@ func newFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*
 		return nil, err
 	}
 
-	//	overrideOptions()
-
 	setupLogger(c)
 
 	baseUrl, err := url.Parse(c.BaseUrl)
@@ -73,7 +73,7 @@ func newFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*
 		return nil, err
 	}
 
-	s := &FiberServerAdapter{
+	s := &FiberServerTemplate{
 		boot:       boot,
 		baseURL:    baseUrl,
 		FiberEntry: entry,
@@ -85,22 +85,28 @@ func newFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*
 	routes := handler.Routes(ctx)
 
 	for _, v := range routes {
+		path, err := url.JoinPath(c.BaseUrl, v.Path)
+
+		if err != nil {
+			return nil, err
+		}
+
 		switch v.Method {
 		case server.GET:
-			entry.App.Get(v.Path, adapters.Convert(v.Handler))
+			entry.App.Get(path, adapters.Convert(v.Handler))
 		case server.POST:
-			entry.App.Post(v.Path, adapters.Convert(v.Handler))
+			entry.App.Post(path, adapters.Convert(v.Handler))
 		case server.PUT:
-			entry.App.Put(v.Path, adapters.Convert(v.Handler))
+			entry.App.Put(path, adapters.Convert(v.Handler))
 		case server.PATCH:
-			entry.App.Patch(v.Path, adapters.Convert(v.Handler))
+			entry.App.Patch(path, adapters.Convert(v.Handler))
 		}
 	}
 
 	return s, nil
 }
 
-func (bs *FiberServerAdapter) Run() error {
+func (bs *FiberServerTemplate) Run() error {
 	// This is required!!!
 	bs.RefreshFiberRoutes()
 
@@ -146,5 +152,14 @@ func loadConfig() (*Config, error) {
 		return nil, errors.New("Failed to load configuration")
 	}
 
+	overrideConfig(&c, viper.Viper)
+
 	return &c, nil
+}
+
+func overrideConfig(c *Config, viper *viper.Viper) {
+	c.Version = viper.GetString("server.version")
+	c.BaseUrl = viper.GetString("server.baseUrl")
+
+	fmt.Printf("VERSION: %s, BASE_URL: %s \n", c.Version, c.BaseUrl)
 }

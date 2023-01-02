@@ -17,15 +17,17 @@ func NewCreateDocument(r documents.CreateDocumentRepositorer) documents2.CreateD
 
 func (d *CreateDocument) Execute(
 	documentData *documents2.CreateDocumenterRequest) (*documents2.CreateDocumenterResponse, error) {
-	data := &documents.CreateDocumentRepositorerRequest{}
+	data := &documents.CreateDocumentRepositorerRequest{
+		Document: documentData.Document,
+	}
 
-	_, err := d.repo.CreateDocument(data)
+	res, err := d.repo.CreateDocument(data)
 
 	if err != nil {
 		return nil, err
 	}
 
-	//model conversion
-
-	return nil, nil
+	return &documents2.CreateDocumenterResponse{
+		DocumentId: res.DocumentId,
+	}, nil
 }

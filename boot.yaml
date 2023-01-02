@@ -1,6 +1,6 @@
 config:
   - name: bee-config
-    path: "configs/default.yaml"
+    path: "configs/default.json"
 fiber:
   - name: bee                                              # Required
     port: 8080                                             # Required

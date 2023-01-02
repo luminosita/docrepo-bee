@@ -2,13 +2,14 @@ package documents
 
 import (
 	"github.com/luminosita/bee/common/interfaces"
+	"github.com/luminosita/bee/internal/domain/entities"
 )
 
 type GetDocumenterRequest = struct {
 	DocumentId string
 }
 type GetDocumenterResponse = struct {
-	Content string
+	Document *entities.Document
 }
 
 type GetDocumenter interface {

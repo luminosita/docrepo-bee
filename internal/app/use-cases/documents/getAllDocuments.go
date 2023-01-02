@@ -19,13 +19,13 @@ func (d *GetAllDocuments) Execute(
 	documentData *documents2.GetAllDocumenterRequest) (*documents2.GetAllDocumenterResponse, error) {
 	data := &documents.GetAllDocumentsRepositorerRequest{}
 
-	_, err := d.repo.GetAllDocuments(data)
+	res, err := d.repo.GetAllDocuments(data)
 
 	if err != nil {
 		return nil, err
 	}
 
-	//model conversion
-
-	return nil, nil
+	return &documents2.GetAllDocumenterResponse{
+		Documents: res.Documents,
+	}, nil
 }

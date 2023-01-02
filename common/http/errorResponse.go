@@ -1,6 +1,6 @@
 package http
 
-func Ok(body string) *HttpResponse {
+func Ok(body any) *HttpResponse {
 	return &HttpResponse{
 		StatusCode: 200,
 		Body:       body,

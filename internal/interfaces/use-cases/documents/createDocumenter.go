@@ -1,9 +1,12 @@
 package documents
 
-import "github.com/luminosita/bee/common/interfaces"
+import (
+	"github.com/luminosita/bee/common/interfaces"
+	"github.com/luminosita/bee/internal/domain/entities"
+)
 
 type CreateDocumenterRequest = struct {
-	Content string
+	Document *entities.Document
 }
 type CreateDocumenterResponse = struct {
 	DocumentId string

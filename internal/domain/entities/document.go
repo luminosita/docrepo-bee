@@ -1,6 +1,6 @@
 package entities
 
 type Document struct {
-	documentId string
-	name       string
+	DocumentId string
+	Name       string
 }

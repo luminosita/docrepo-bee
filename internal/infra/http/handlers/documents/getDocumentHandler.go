@@ -2,7 +2,6 @@ package documents
 
 import (
 	"github.com/luminosita/bee/common/http"
-	"github.com/luminosita/bee/internal/domain/entities"
 	"github.com/luminosita/bee/internal/interfaces/use-cases/documents"
 )
 
@@ -18,7 +17,7 @@ func NewGetDocumentHandler(cd documents.GetDocumenter) *GetDocumentHandler {
 
 // GetDocument godoc
 // @Summary      Show something
-// @Description  dummy GET method
+// @Description  Get Document By ID
 // @Tags         documents
 // @Accept       json
 // @Produce      json
@@ -29,7 +28,7 @@ func NewGetDocumentHandler(cd documents.GetDocumenter) *GetDocumentHandler {
 // @Failure      500  {object}  error
 // @Router       /documents/:id [get]
 func (h *GetDocumentHandler) Handle(req *http.HttpRequest) (*http.HttpResponse, error) {
-	documentId := req.Params["docId"]
+	documentId := req.Params["id"]
 
 	res, err := h.cd.Execute(&documents.GetDocumenterRequest{
 		DocumentId: documentId,
@@ -39,11 +38,5 @@ func (h *GetDocumentHandler) Handle(req *http.HttpRequest) (*http.HttpResponse, 
 		return nil, err
 	}
 
-	http.Ok(res.Content)
-
-	return nil, nil
-}
-
-func (h *GetDocumentHandler) Model(req *http.HttpRequest) *entities.Document {
-	return nil
+	return http.Ok(res.Document), nil
 }

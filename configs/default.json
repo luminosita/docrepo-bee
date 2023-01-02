@@ -1,0 +1,10 @@
+{
+  "server" : {
+    "version": "dev",
+    "logger": {
+      "level": "debug",
+      "format": "json"
+    },
+    "baseUrl": "/api/v1"
+  }
+}

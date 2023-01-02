@@ -6,12 +6,13 @@ import (
 	"github.com/luminosita/bee/common/server/adapters"
 	"github.com/luminosita/bee/internal/bee"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type serveOptions struct {
 	// Flags
-	webHTTPAddr  string
-	webHTTPSAddr string
+	baseUrl string
+	version string
 }
 
 func commandServe() *cobra.Command {
@@ -21,12 +22,24 @@ func commandServe() *cobra.Command {
 		Use:     "serve [flags] config-file",
 		Short:   "Launch Bee",
 		Example: "bee serve",
-		//		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true
 			cmd.SilenceErrors = true
 
-			//						options.config = args[0]
+			flags := cmd.Flags()
+
+			err := flags.Parse(args)
+
+			if err != nil {
+				return err
+			}
+
+			//TODO : Not working for flags and environment
+			viper.BindPFlag("server.version", flags.Lookup("version"))
+			viper.BindPFlag("server.baseUrl", flags.Lookup("baseUrl"))
+
+			viper.SetEnvPrefix("bee") // will be uppercased automatically
+			viper.AutomaticEnv()
 
 			return runServe()
 		},
@@ -34,8 +47,8 @@ func commandServe() *cobra.Command {
 
 	flags := cmd.Flags()
 
-	flags.StringVar(&options.webHTTPAddr, "web-http-addr", "", "Web HTTP address")
-	flags.StringVar(&options.webHTTPSAddr, "web-https-addr", "", "Web HTTPS address")
+	flags.StringVar(&options.baseUrl, "baseUrl", "", "Base URL")
+	flags.StringVar(&options.version, "version", "", "Version")
 
 	return cmd
 }

@@ -2,7 +2,7 @@ package http
 
 type HttpResponse struct {
 	StatusCode int
-	Body       string
+	Body       any
 
 	Errors []error
 }

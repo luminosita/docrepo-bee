@@ -17,15 +17,17 @@ func NewGetDocument(r documents.GetDocumentRepositorer) documents2.GetDocumenter
 
 func (d *GetDocument) Execute(
 	documentData *documents2.GetDocumenterRequest) (*documents2.GetDocumenterResponse, error) {
-	data := &documents.GetDocumentRepositorerRequest{}
+	data := &documents.GetDocumentRepositorerRequest{
+		DocumentID: documentData.DocumentId,
+	}
 
-	_, err := d.repo.GetDocument(data)
+	res, err := d.repo.GetDocument(data)
 
 	if err != nil {
 		return nil, err
 	}
 
-	//model conversion
-
-	return nil, nil
+	return &documents2.GetDocumenterResponse{
+		Document: res.Document,
+	}, nil
 }
