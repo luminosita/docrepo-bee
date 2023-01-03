@@ -10,9 +10,9 @@ linters-settings:
         packages-with-error-message:
             - io/ioutil: "The 'io/ioutil' package is deprecated. Use corresponding 'os' or 'io' functions instead."
     gci:
-        local-prefixes: github.com/dexidp/dex
+        local-prefixes: github.com/luminosita/bee
     goimports:
-        local-prefixes: github.com/dexidp/dex
+        local-prefixes: github.com/luminosita/bee
 
 
 linters:

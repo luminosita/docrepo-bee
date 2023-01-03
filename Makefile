@@ -3,10 +3,21 @@ OS = $(shell uname | tr A-Z a-z)
 export PATH := $(abspath bin/protoc/bin/):$(abspath bin/):${PATH}
 
 PROJ=bee
-ORG_PATH=github.com/luminocita
+ORG_PATH=github.com/luminosita
 REPO_PATH=$(ORG_PATH)/$(PROJ)
 
 VERSION ?= $(shell ./scripts/git-version)
+
+GOTOOLS = golang.org/x/lint/golint \
+	github.com/golangci/golangci-lint/cmd/golangci-lint \
+	golang.org/x/tools/cmd/goimports \
+	mvdan.cc/gofumpt \
+	github.com/bufbuild/buf/cmd/buf\
+	github.com/gogo/protobuf/protoc-gen-gogo \
+	github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
+	github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
+	github.com/mwitkow/go-proto-validators/protoc-gen-govalidators \
+	sigs.k8s.io/kind \
 
 DOCKER_REPO=ghcr.io/luminosita/bee
 DOCKER_IMAGE=$(DOCKER_REPO):$(VERSION)
@@ -26,11 +37,11 @@ KIND_NODE_IMAGE = "kindest/node:v1.26.0@sha256:3264cbae4b80c241743d12644b2506fff
 KIND_TMP_DIR = "$(PWD)/bin/test/bee-kind-kubeconfig"
 
 milos:
-	@echo $(VERSION)
+	@echo $(LD_FLAGS)
 
 .PHONY: generate
 generate:
-	@go generate $(REPO_PATH)/storage/ent/
+#	@go generate $(REPO_PATH)/storage/ent/
 
 build: generate bin/bee
 
@@ -44,16 +55,22 @@ release-binary: generate
 	@go build -o /go/bin/bee -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/bee
 
 docker-compose.override.yaml:
-	cp docker-compose.override.yaml.dist docker-compose.override.yaml
+	@cd deployments; \
+		cp docker-compose.override.yaml.dist docker-compose.override.yaml
 
 .PHONY: up
 up: docker-compose.override.yaml ## Launch the development environment
-	@ if [ docker-compose.override.yaml -ot docker-compose.override.yaml.dist ]; then diff -u docker-compose.override.yaml docker-compose.override.yaml.dist || (echo "!!! The distributed docker-compose.override.yaml example changed. Please update your file accordingly (or at least touch it). !!!" && false); fi
-	docker-compose up -d
+	@cd deployments; \
+		if [ docker-compose.override.yaml -ot docker-compose.override.yaml.dist ]; then \
+		  diff -u docker-compose.override.yaml docker-compose.override.yaml.dist || \
+		  (echo "!!! The distributed docker-compose.override.yaml example changed. Please update your file accordingly (or at least touch it). !!!" && false); \
+		fi; \
+		docker-compose up -d
 
 .PHONY: down
-down: clear ## Destroy the development environment
-	docker-compose down --volumes --remove-orphans --rmi local
+down:  ## Destroy the development environment
+	@cd deployments; \
+		docker-compose down --volumes --remove-orphans --rmi local \
 
 test:
 	@go test -v ./...
@@ -83,7 +100,8 @@ fix: ## Fix lint violations
 
 .PHONY: docker-image
 docker-image:
-	@sudo docker build -t $(DOCKER_IMAGE) .
+	@cd build/package; \
+		docker build -t $(DOCKER_IMAGE) .
 
 .PHONY: verify-proto
 verify-proto: proto
@@ -100,55 +118,13 @@ FORCE:
 
 .PHONY: proto
 proto:
-	@protoc --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. api/v2/*.proto
-	@protoc --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. api/*.proto
+	@protoc --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. api/v1/*.proto
 	#@cp api/v2/*.proto api/
 
 .PHONY: proto-internal
 proto-internal:
-	@protoc --go_out=paths=source_relative:. server/internal/*.proto
+	#@protoc --go_out=paths=source_relative:. server/internal/*.proto
 
-# Dependency versions
-GOLANGCI_VERSION = 1.50.1
-GOTESTSUM_VERSION ?= 1.8.2
-PROTOC_VERSION = 21.12
-PROTOC_GEN_GO_VERSION = 1.28.1
-PROTOC_GEN_GO_GRPC_VERSION = 1.51.0
-KIND_VERSION = 0.17.0
+deps:
+	go get $(GOTOOLS)
 
-deps: bin/gotestsum bin/golangci-lint bin/protoc bin/protoc-gen-go bin/protoc-gen-go-grpc bin/kind
-
-bin/gotestsum:
-	@mkdir -p bin
-	curl -L https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_$(shell uname | tr A-Z a-z)_amd64.tar.gz | tar -zOxf - gotestsum > ./bin/gotestsum
-	@chmod +x ./bin/gotestsum
-
-bin/golangci-lint:
-	@mkdir -p bin
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | BINARY=golangci-lint bash -s -- v${GOLANGCI_VERSION}
-
-bin/protoc:
-	@mkdir -p bin/protoc
-ifeq ($(shell uname | tr A-Z a-z), darwin)
-	curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-osx-x86_64.zip > bin/protoc.zip
-endif
-ifeq ($(shell uname | tr A-Z a-z), linux)
-	curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip > bin/protoc.zip
-endif
-	unzip bin/protoc.zip -d bin/protoc
-	rm bin/protoc.zip
-
-bin/protoc-gen-go:
-	@mkdir -p bin
-	curl -L https://github.com/protocolbuffers/protobuf-go/releases/download/v${PROTOC_GEN_GO_VERSION}/protoc-gen-go.v${PROTOC_GEN_GO_VERSION}.$(shell uname | tr A-Z a-z).amd64.tar.gz | tar -zOxf - protoc-gen-go > ./bin/protoc-gen-go
-	@chmod +x ./bin/protoc-gen-go
-
-bin/protoc-gen-go-grpc:
-	@mkdir -p bin
-	curl -L https://github.com/grpc/grpc-go/releases/download/cmd/protoc-gen-go-grpc/v${PROTOC_GEN_GO_GRPC_VERSION}/protoc-gen-go-grpc.v${PROTOC_GEN_GO_GRPC_VERSION}.$(shell uname | tr A-Z a-z).amd64.tar.gz | tar -zOxf - ./protoc-gen-go-grpc > ./bin/protoc-gen-go-grpc
-	@chmod +x ./bin/protoc-gen-go-grpc
-
-bin/kind:
-	@mkdir -p bin
-	curl -L https://github.com/kubernetes-sigs/kind/releases/download/v${KIND_VERSION}/kind-$(shell uname | tr A-Z a-z)-amd64 > ./bin/kind
-	@chmod +x ./bin/kind

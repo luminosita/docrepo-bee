@@ -1,0 +1,14 @@
+# This docker-compose file provides quick setups for testing different storage backend options.
+version: "3.8"
+
+services:
+    mongodb:
+        image: mongo:latest
+
+    nats:
+        image: nats:latest
+
+    dex:
+        image: ghcr.io/dexidp/dex:v2.35.3
+#        command: ["--copy-service"]
+#override config.yaml
