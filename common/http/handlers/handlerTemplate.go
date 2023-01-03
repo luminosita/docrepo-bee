@@ -7,13 +7,13 @@ import (
 )
 
 type HandlerTemplate struct {
-	validator validators.Validator[any]
+	validator validators.Validator
 	Handler
 }
 
 func NewHandlerTemplate(h Handler) *HandlerTemplate {
 	return &HandlerTemplate{
-		validator: adapters.NewValidatorAdapter[any](),
+		validator: adapters.NewValidatorAdapter(),
 		Handler:   h,
 	}
 }

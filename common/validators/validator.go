@@ -1,5 +1,5 @@
 package validators
 
-type Validator[T any] interface {
-	Validate(*T) []error
+type Validator interface {
+	Validate(any) []error
 }

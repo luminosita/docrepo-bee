@@ -1,8 +1,8 @@
 config:
-  - name: bee-config
-    path: "configs/default.json"
+  - name: dev-config
+    path: "configs/default.yaml"
 fiber:
-  - name: bee                                              # Required
+  - name: fiber                                              # Required
     port: 8080                                             # Required
     enabled: true                                          # Required
     commonService:

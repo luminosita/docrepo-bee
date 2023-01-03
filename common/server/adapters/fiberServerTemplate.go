@@ -4,42 +4,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	adapters3 "github.com/luminosita/bee/common/config/adapters"
 	"github.com/luminosita/bee/common/http/adapters"
 	"github.com/luminosita/bee/common/log"
 	"github.com/luminosita/bee/common/server"
-	rkboot "github.com/rookie-ninja/rk-boot/v2"
-	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
+	adapters2 "github.com/luminosita/bee/common/validators/adapters"
 	rkfiber "github.com/rookie-ninja/rk-fiber/boot"
 	"github.com/spf13/viper"
 	"net/url"
+	"reflect"
 	"runtime"
+	"strings"
 )
+
+const CFG_ENTRY = "config"
+const FIBER_CFG_ENTRY = "fiber"
+const TAG_NAME = "mapstructure"
 
 // Config holds the server's configuration options.
 //
 // Multiple servers using the same storage are expected to be configured identically.
-type Config struct {
-	Version string `json:"version" validate:"required,oneof=dev stage prod""`
-
-	BaseUrl string `json:"baseUrl" validate:"required"`
-
-	logCfg LoggerConfig `json:"logger"`
-}
-
-// Logger holds configuration required to customize logging for dex.
-type LoggerConfig struct {
-	// Level sets logging level severity.
-	Level string `json:"level" validate:"omitempty,oneof=error debug info"`
-
-	// Format specifies the format to be used for logging.
-	Format string `json:"format" validate:"omitempty,oneof=text json"`
-}
-
 type FiberServerTemplate struct {
-	handler server.ServerHandler
+	env server.Environment
 
-	boot *rkboot.Boot
+	c *server.Config
+
+	handler server.ServerHandler
 
 	baseURL *url.URL
 
@@ -47,82 +36,78 @@ type FiberServerTemplate struct {
 }
 
 // NewServer constructs a server from the provided config.
-func NewFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*FiberServerTemplate, error) {
-	return newFiberServerAdapter(ctx, handler)
+func NewFiberServerTemplate(env server.Environment, h server.ServerHandler) *FiberServerTemplate {
+	return newFiberServerTemplate(env, h)
 }
 
-func newFiberServerAdapter(ctx context.Context, handler server.ServerHandler) (*FiberServerTemplate, error) {
-	// Create a new boot instance.
-	boot := rkboot.NewBoot()
+func newFiberServerTemplate(env server.Environment, h server.ServerHandler) *FiberServerTemplate {
+	return &FiberServerTemplate{
+		env:     env,
+		handler: h,
+	}
+}
 
-	// Bootstrap
-	boot.Bootstrap(context.Background())
-
-	// Register handler
-	entry := rkfiber.GetFiberEntry("bee")
-
-	c, err := loadConfig()
+func (bs *FiberServerTemplate) Run(ctx context.Context, viper *viper.Viper) error {
+	err := bs.loadConfig(viper)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	setupLogger(c)
+	bs.setupLogger()
 
-	baseUrl, err := url.Parse(c.BaseUrl)
+	bs.baseURL, err = url.Parse(bs.c.BaseUrl)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	s := &FiberServerTemplate{
-		boot:       boot,
-		baseURL:    baseUrl,
-		FiberEntry: entry,
-		handler:    handler,
-	}
+	bs.FiberEntry = rkfiber.GetFiberEntry(FIBER_CFG_ENTRY)
 
 	//	setupMiddlewares(app);
 
-	routes := handler.Routes(ctx)
-
-	for _, v := range routes {
-		path, err := url.JoinPath(c.BaseUrl, v.Path)
-
-		if err != nil {
-			return nil, err
-		}
-
-		switch v.Method {
-		case server.GET:
-			entry.App.Get(path, adapters.Convert(v.Handler))
-		case server.POST:
-			entry.App.Post(path, adapters.Convert(v.Handler))
-		case server.PUT:
-			entry.App.Put(path, adapters.Convert(v.Handler))
-		case server.PATCH:
-			entry.App.Patch(path, adapters.Convert(v.Handler))
-		}
+	err = bs.setupRoutes(ctx)
+	if err != nil {
+		return err
 	}
 
-	return s, nil
-}
-
-func (bs *FiberServerTemplate) Run() error {
 	// This is required!!!
 	bs.RefreshFiberRoutes()
-
-	bs.boot.WaitForShutdownSig(context.TODO())
 
 	return nil
 }
 
-func setupLogger(c *Config) log.Logger {
-	log.SetLogger(c.logCfg.Level, c.logCfg.Format)
+func (bs *FiberServerTemplate) setupRoutes(ctx context.Context) error {
+	routes := bs.handler.Routes(ctx)
+
+	for _, v := range routes {
+		path, err := url.JoinPath(bs.c.BaseUrl, v.Path)
+
+		if err != nil {
+			return err
+		}
+
+		switch v.Method {
+		case server.GET:
+			bs.App.Get(path, adapters.Convert(v.Handler))
+		case server.POST:
+			bs.App.Post(path, adapters.Convert(v.Handler))
+		case server.PUT:
+			bs.App.Put(path, adapters.Convert(v.Handler))
+		case server.PATCH:
+			bs.App.Patch(path, adapters.Convert(v.Handler))
+		}
+	}
+
+	return nil
+}
+
+func (bs *FiberServerTemplate) setupLogger() log.Logger {
+	log.SetLogger(bs.c.LogCfg.Level, bs.c.LogCfg.Format)
 
 	logger := log.GetLogger()
 
 	logger.Infof(
 		"Bee Version: %s, Go Version: %s, Go OS/ARCH: %s %s",
-		c.Version,
+		bs.env,
 		runtime.Version(),
 		runtime.GOOS,
 		runtime.GOARCH,
@@ -131,35 +116,53 @@ func setupLogger(c *Config) log.Logger {
 	return logger
 }
 
-func loadConfig() (*Config, error) {
-	viper := rkentry.GlobalAppCtx.GetConfigEntry("bee-config")
+func (bs *FiberServerTemplate) loadConfig(viper *viper.Viper) error {
+	c := bs.handler.Config()
 
-	loader := adapters3.NewViperAdapter[Config](viper.Viper)
-
-	c := Config{}
-
-	err := loader.ReadConfig("server", &c)
+	err := viper.UnmarshalKey(CFG_ENTRY, c)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	res := loader.Validate(&c)
+	validator := adapters2.NewValidatorAdapter()
 
-	//TODO: Test
+	res := validator.Validate(c)
 	if res != nil {
 		log.GetLogger().Errorf("%+v", res)
-
-		return nil, errors.New("Failed to load configuration")
+		//TODO: Externalize
+		return errors.New("Failed to load configuration")
 	}
 
-	overrideConfig(&c, viper.Viper)
+	bs.c = c.ServerConfig()
 
-	return &c, nil
+	bs.overrideConfig(viper)
+
+	return nil
 }
 
-func overrideConfig(c *Config, viper *viper.Viper) {
-	c.Version = viper.GetString("server.version")
-	c.BaseUrl = viper.GetString("server.baseUrl")
+func (bs *FiberServerTemplate) overrideConfig(viper *viper.Viper) {
+	//TODO: Not working with overrides
+	t := reflect.TypeOf(bs.c).Elem()
+	s := reflect.ValueOf(bs.c).Elem()
 
-	fmt.Printf("VERSION: %s, BASE_URL: %s \n", c.Version, c.BaseUrl)
+	for k, v := range bs.handler.OverrideConfigItems() {
+		newValue := viper.GetString(k)
+
+		sp := strings.Split(k, ".")
+		tagName := sp[len(sp)-1]
+
+		for i := 0; i < t.NumField(); i++ {
+			tv, ok := t.Field(i).Tag.Lookup(TAG_NAME)
+
+			if ok && tv == tagName {
+				f := s.FieldByName(t.Field(i).Name)
+				if f.Kind() == reflect.String && f.CanSet() {
+					f.SetString(newValue)
+				} else {
+					//TODO: Externalize
+					fmt.Printf("Wrong config field to override: %s", v)
+				}
+			}
+		}
+	}
 }
