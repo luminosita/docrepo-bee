@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"context"
-	"github.com/luminosita/bee/common/http/handlers"
-	use_cases "github.com/luminosita/bee/internal/bee/factories/use-cases"
-	"github.com/luminosita/bee/internal/infra/http/handlers/documents"
+	"github.com/luminosita/honeycomb/pkg/http/handlers"
+	use_cases "github.com/luminosita/sample-bee/internal/bee/factories/use-cases"
+	"github.com/luminosita/sample-bee/internal/infra/http/handlers/documents"
 )
 
 func MakeGetDocumentHandler(ctx context.Context) handlers.Handler {

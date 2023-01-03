@@ -1,6 +1,6 @@
 package documents
 
-import "github.com/luminosita/bee/internal/domain/entities"
+import "github.com/luminosita/sample-bee/internal/domain/entities"
 
 type CreateDocumentRepositorerRequest = struct {
 	Document *entities.Document

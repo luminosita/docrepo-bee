@@ -2,9 +2,9 @@ package use_cases
 
 import (
 	"context"
-	documents2 "github.com/luminosita/bee/internal/app/use-cases/documents"
-	"github.com/luminosita/bee/internal/infra/db/mockdb/repositories"
-	"github.com/luminosita/bee/internal/interfaces/use-cases/documents"
+	documents2 "github.com/luminosita/sample-bee/internal/app/use-cases/documents"
+	"github.com/luminosita/sample-bee/internal/infra/db/mockdb/repositories"
+	"github.com/luminosita/sample-bee/internal/interfaces/use-cases/documents"
 )
 
 func MakeCreateDocument(ctx context.Context) documents.CreateDocumenter {

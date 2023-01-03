@@ -2,9 +2,9 @@ package documents
 
 import (
 	"encoding/json"
-	"github.com/luminosita/bee/common/http"
-	"github.com/luminosita/bee/internal/domain/entities"
-	"github.com/luminosita/bee/internal/interfaces/use-cases/documents"
+	"github.com/luminosita/honeycomb/pkg/http"
+	"github.com/luminosita/sample-bee/internal/domain/entities"
+	"github.com/luminosita/sample-bee/internal/interfaces/use-cases/documents"
 )
 
 type CreateDocumentHandler struct {
@@ -31,7 +31,10 @@ func NewCreateDocumentHandler(cd documents.CreateDocumenter) *CreateDocumentHand
 func (h *CreateDocumentHandler) Handle(req *http.HttpRequest) (*http.HttpResponse, error) {
 	doc := &entities.Document{}
 
-	json.Unmarshal(req.Body, doc)
+	err := json.Unmarshal(req.Body, doc)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := h.cd.Execute(&documents.CreateDocumenterRequest{
 		Document: doc,

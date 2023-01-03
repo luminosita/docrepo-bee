@@ -2,7 +2,7 @@ OS = $(shell uname | tr A-Z a-z)
 
 export PATH := $(abspath bin/protoc/bin/):$(abspath bin/):${PATH}
 
-PROJ=bee
+PROJ=sample-bee
 ORG_PATH=github.com/luminosita
 REPO_PATH=$(ORG_PATH)/$(PROJ)
 
@@ -19,7 +19,7 @@ GOTOOLS = golang.org/x/lint/golint \
 	github.com/mwitkow/go-proto-validators/protoc-gen-govalidators \
 	sigs.k8s.io/kind \
 
-DOCKER_REPO=ghcr.io/luminosita/bee
+DOCKER_REPO=ghcr.io/luminosita/sample-bee
 DOCKER_IMAGE=$(DOCKER_REPO):$(VERSION)
 
 $( shell mkdir -p bin )
@@ -47,7 +47,7 @@ build: generate bin/bee
 
 bin/bee:
 	@mkdir -p bin/
-	@go install -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/bee
+	@go install -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/sample-bee
 
 .PHONY: release-binary
 release-binary: LD_FLAGS = "-w -X main.version=$(VERSION) -extldflags \"-static\""

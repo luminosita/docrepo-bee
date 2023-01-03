@@ -1,8 +1,8 @@
 package documents
 
 import (
-	"github.com/luminosita/bee/common/interfaces"
-	"github.com/luminosita/bee/internal/domain/entities"
+	"github.com/luminosita/honeycomb/pkg/interfaces"
+	"github.com/luminosita/sample-bee/internal/domain/entities"
 )
 
 type GetAllDocumenterRequest = struct {

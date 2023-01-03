@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	server2 "github.com/luminosita/bee/common/server"
-	"github.com/luminosita/bee/common/server/adapters"
-	"github.com/luminosita/bee/internal/bee"
+	server2 "github.com/luminosita/honeycomb/pkg/server"
+	"github.com/luminosita/honeycomb/pkg/server/adapters"
+	"github.com/luminosita/sample-bee/internal/bee"
 	rkboot "github.com/rookie-ninja/rk-boot/v2"
 	rkentry "github.com/rookie-ninja/rk-entry/v2/entry"
 	"github.com/spf13/cobra"
@@ -29,7 +29,7 @@ func commandServe() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "serve [flags] environment config-file-path",
 		Short:   "Launch Bee",
-		Example: "bee serve dev configs/boot.yaml",
+		Example: "sample-bee serve dev configs/boot.yaml",
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true

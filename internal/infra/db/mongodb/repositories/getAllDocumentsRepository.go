@@ -3,8 +3,8 @@ package repositories
 import (
 	"context"
 	"fmt"
-	"github.com/luminosita/bee/internal/infra/db/mongodb"
-	"github.com/luminosita/bee/internal/interfaces/respositories/documents"
+	"github.com/luminosita/sample-bee/internal/infra/db/mongodb"
+	"github.com/luminosita/sample-bee/internal/interfaces/respositories/documents"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
 )

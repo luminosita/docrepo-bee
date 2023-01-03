@@ -1,8 +1,8 @@
 package documents
 
 import (
-	"github.com/luminosita/bee/internal/interfaces/respositories/documents"
-	documents2 "github.com/luminosita/bee/internal/interfaces/use-cases/documents"
+	"github.com/luminosita/sample-bee/internal/interfaces/respositories/documents"
+	documents2 "github.com/luminosita/sample-bee/internal/interfaces/use-cases/documents"
 )
 
 type GetAllDocuments struct {
@@ -16,7 +16,7 @@ func NewGetAllDocuments(r documents.GetAllDocumentsRepositorer) documents2.GetAl
 }
 
 func (d *GetAllDocuments) Execute(
-	documentData *documents2.GetAllDocumenterRequest) (*documents2.GetAllDocumenterResponse, error) {
+	_ *documents2.GetAllDocumenterRequest) (*documents2.GetAllDocumenterResponse, error) {
 	data := &documents.GetAllDocumentsRepositorerRequest{}
 
 	res, err := d.repo.GetAllDocuments(data)

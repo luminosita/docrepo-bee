@@ -2,8 +2,8 @@ package bee
 
 import (
 	"context"
-	"github.com/luminosita/bee/common/server"
-	"github.com/luminosita/bee/internal/bee/factories/handlers"
+	"github.com/luminosita/honeycomb/pkg/server"
+	"github.com/luminosita/sample-bee/internal/bee/factories/handlers"
 )
 
 type Config struct {

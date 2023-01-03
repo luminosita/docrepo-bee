@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"context"
-	"github.com/luminosita/bee/internal/infra/db/mongodb"
-	"github.com/luminosita/bee/internal/interfaces/respositories/documents"
+	"github.com/luminosita/sample-bee/internal/infra/db/mongodb"
+	"github.com/luminosita/sample-bee/internal/interfaces/respositories/documents"
 )
 
 type CreateDocumentRepository struct {
