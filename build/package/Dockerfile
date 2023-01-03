@@ -19,24 +19,15 @@ RUN go mod download
 
 COPY . .
 
+RUN make release-binary
+
 RUN make build
 FROM alpine:3.17.0 AS stager
 
 RUN mkdir -p /var/bee
 RUN mkdir -p /etc/bee
-COPY config.docker.yaml /etc/bee/
-
-FROM alpine:3.17.0 AS gomplate
-
-ARG TARGETOS
-ARG TARGETARCH
-ARG TARGETVARIANT
-
-ENV GOMPLATE_VERSION=v3.11.3
-
-RUN wget -O /usr/local/bin/gomplate \
-    "https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_${TARGETOS:-linux}-${TARGETARCH:-amd64}${TARGETVARIANT}" \
-    && chmod +x /usr/local/bin/gomplate
+COPY configs/config.docker.yaml /etc/bee/
+COPY configs/boot.yaml /etc/bee/
 
 # For Dependabot to detect base image versions
 FROM alpine:3.17.0 AS alpine
@@ -56,13 +47,13 @@ COPY --from=stager --chown=1001:1001 /etc/bee /etc/bee
 
 # Copy module files for CVE scanning / dependency analysis.
 COPY --from=builder /usr/local/src/bee/go.mod /usr/local/src/bee/go.sum /usr/local/src/bee/
-COPY --from=builder /usr/local/src/bee/api/v2/go.mod /usr/local/src/bee/api/v2/go.sum /usr/local/src/bee/api/v2/
+#COPY --from=builder /usr/local/src/bee/api/v2/go.mod /usr/local/src/bee/api/v2/go.sum /usr/local/src/bee/api/v2/
 
 COPY --from=builder /go/bin/bee /usr/local/bin/bee
 #COPY --from=builder /go/bin/docker-entrypoint /usr/local/bin/docker-entrypoint
-COPY --from=builder /usr/local/src/bee/web /srv/bee/web
+#COPY --from=builder /usr/local/src/bee/web /srv/bee/web
 
-COPY --from=gomplate /usr/local/bin/gomplate /usr/local/bin/gomplate
+#COPY --from=gomplate /usr/local/bin/gomplate /usr/local/bin/gomplate
 
 USER 1001:1001
 

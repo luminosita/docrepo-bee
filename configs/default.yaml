@@ -1,6 +1,0 @@
-config:
-  server:
-    baseUrl: "/api/v1"
-    logger:
-      level: "info"
-      format: "json"

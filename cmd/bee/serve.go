@@ -12,28 +12,31 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"os"
 	"strings"
 )
 
 type ServerOptions struct {
 	// Flags
-	Env     server2.Environment
-	BaseUrl string
+	Env       server2.Environment
+	BaseUrl   string
+	ConfigUrl string
 }
 
 func commandServe() *cobra.Command {
 	options := ServerOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "serve [flags] environment",
+		Use:     "serve [flags] environment config-file-path",
 		Short:   "Launch Bee",
-		Example: "bee serve environment",
-		Args:    cobra.ExactArgs(1),
+		Example: "bee serve dev configs/boot.yaml",
+		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true
 			cmd.SilenceErrors = true
 
 			options.Env = server2.EnvironmentFromString(args[0])
+			options.ConfigUrl = args[1]
 
 			return runServe(&options, cmd.Flags())
 		},
@@ -49,17 +52,25 @@ func commandServe() *cobra.Command {
 func runServe(options *ServerOptions, pflags *pflag.FlagSet) error {
 	ctx := context.Background()
 
-	boot := rkboot.NewBoot()
+	bootData, err := os.ReadFile(options.ConfigUrl)
+	if err != nil {
+		return err
+	}
+
+	boot := rkboot.NewBoot(rkboot.WithBootConfigRaw(bootData))
 	boot.Bootstrap(ctx)
 
-	viper, err := setupViper(options, pflags)
+	vpr, err := setupViper(options, pflags)
 	if err != nil {
 		return err
 	}
 
 	server := adapters.NewFiberServerTemplate(options.Env, bee.NewBeeServer(&bee.Config{}))
 
-	server.Run(ctx, viper)
+	err = server.Run(ctx, vpr)
+	if err != nil {
+		return err
+	}
 
 	boot.WaitForShutdownSig(ctx)
 
@@ -67,15 +78,18 @@ func runServe(options *ServerOptions, pflags *pflag.FlagSet) error {
 }
 
 func setupViper(options *ServerOptions, pflags *pflag.FlagSet) (*viper.Viper, error) {
-	viper := rkentry.GlobalAppCtx.GetConfigEntry(fmt.Sprintf("%s-config", options.Env))
+	vpr := rkentry.GlobalAppCtx.GetConfigEntry(fmt.Sprintf("%s-config", options.Env))
 
-	if viper == nil {
+	if vpr == nil {
 		//TODO: Externalize
 		return nil, errors.New("Unable to load connfiguration. Check the configuration file path")
 	}
 
 	if options.BaseUrl != "" {
-		viper.BindPFlag("config.server.baseUrl", pflags.Lookup("baseUrl"))
+		err := viper.BindPFlag("config.server.baseUrl", pflags.Lookup("baseUrl"))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	//TOOD: Environnment vars are not working
@@ -83,5 +97,5 @@ func setupViper(options *ServerOptions, pflags *pflag.FlagSet) (*viper.Viper, er
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
-	return viper.Viper, nil
+	return vpr.Viper, nil
 }

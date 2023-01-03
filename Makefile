@@ -100,8 +100,7 @@ fix: ## Fix lint violations
 
 .PHONY: docker-image
 docker-image:
-	@cd build/package; \
-		docker build -t $(DOCKER_IMAGE) .
+	@docker build -f build/package/Dockerfile -t $(DOCKER_IMAGE) .
 
 .PHONY: verify-proto
 verify-proto: proto
