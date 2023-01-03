@@ -25,6 +25,9 @@ LD_FLAGS="-w -X main.version=$(VERSION)"
 KIND_NODE_IMAGE = "kindest/node:v1.26.0@sha256:3264cbae4b80c241743d12644b2506fff13dce07fcadf29079c1d06a47b399dd"
 KIND_TMP_DIR = "$(PWD)/bin/test/bee-kind-kubeconfig"
 
+milos:
+	@echo $(VERSION)
+
 .PHONY: generate
 generate:
 	@go generate $(REPO_PATH)/storage/ent/
