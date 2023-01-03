@@ -1,6 +1,6 @@
 config:
   - name: dev-config
-    path: "config.dev.yaml"
+    path: "configs/config.dev.yaml"
 fiber:
   - name: fiber                                              # Required
     port: 8080                                             # Required

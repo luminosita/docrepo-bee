@@ -52,7 +52,7 @@ bin/bee:
 .PHONY: release-binary
 release-binary: LD_FLAGS = "-w -X main.version=$(VERSION) -extldflags \"-static\""
 release-binary: generate
-	@go build -o /go/bin/bee -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/bee
+	@go build -o /go/bin/sample-bee -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/sample-bee
 
 docker-compose.override.yaml:
 	@cd deployments; \
