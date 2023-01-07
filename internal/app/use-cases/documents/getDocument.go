@@ -3,15 +3,19 @@ package documents
 import (
 	"errors"
 	"fmt"
+	"github.com/google/wire"
 	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 )
+
+var GetWireSet = wire.NewSet(NewGetDocument,
+	wire.Bind(new(documents2.GetDocumenter), new(*GetDocument)))
 
 type GetDocument struct {
 	repo documents.GetDocumentRepositorer
 }
 
-func NewGetDocument(r documents.GetDocumentRepositorer) documents2.GetDocumenter {
+func NewGetDocument(r documents.GetDocumentRepositorer) *GetDocument {
 	return &GetDocument{
 		repo: r,
 	}

@@ -2,7 +2,6 @@ package bee
 
 import (
 	"context"
-	"github.com/luminosita/docrepo-bee/internal/bee/factories/handlers"
 	"github.com/luminosita/honeycomb/pkg/http"
 	"github.com/luminosita/honeycomb/pkg/server"
 )
@@ -15,6 +14,22 @@ func (c *Config) ServerConfig() *server.Config {
 	return &c.Sc
 }
 
+// @title           Swagger Example API
+// @version         1.0
+// @description     This is a sample server celler server.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.basic  BasicAuth
 type BeeServer struct {
 	c *Config
 }
@@ -46,9 +61,9 @@ func (*BeeServer) Routes(ctx context.Context) []*http.Route {
 
 	routes = append(routes, &http.Route{Type: http.STATIC, Path: "/assets"})
 	routes = append(routes, &http.Route{
-		Type: http.GET, Path: "/documents/:id", Handler: handlers.MakeGetDocumentHandler(ctx)})
+		Type: http.GET, Path: "/documents/:id", Handler: MakeGetDocumentHandler(ctx)})
 	routes = append(routes, &http.Route{
-		Type: http.POST, Path: "/documents", Handler: handlers.MakePutDocumentHandler(ctx)})
+		Type: http.POST, Path: "/documents", Handler: MakePutDocumentHandler(ctx)})
 
 	return routes
 }

@@ -1,10 +1,15 @@
 package documents
 
 import (
+	"github.com/google/wire"
 	"github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 	"github.com/luminosita/honeycomb/pkg/http/ctx"
+	"github.com/luminosita/honeycomb/pkg/http/handlers"
 	"github.com/luminosita/honeycomb/pkg/log"
 )
+
+var PutWireSet = wire.NewSet(NewPutDocumentHandler,
+	wire.Bind(new(handlers.Handler), new(*PutDocumentHandler)))
 
 const DOCUMENT_FIELD_KEY = "document"
 

@@ -2,7 +2,7 @@ OS = $(shell uname | tr A-Z a-z)
 
 export PATH := $(abspath bin/protoc/bin/):$(abspath bin/):${PATH}
 
-PROJ=sample-bee
+PROJ=docrepo-bee
 ORG_PATH=github.com/luminosita
 REPO_PATH=$(ORG_PATH)/$(PROJ)
 
@@ -18,8 +18,9 @@ GOTOOLS = golang.org/x/lint/golint \
 	github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
 	github.com/mwitkow/go-proto-validators/protoc-gen-govalidators \
 	sigs.k8s.io/kind \
+	github.com/google/wire/cmd/wire@latest \
 
-DOCKER_REPO=ghcr.io/luminosita/sample-bee
+DOCKER_REPO=ghcr.io/luminosita/docrepo-bee
 DOCKER_IMAGE=$(DOCKER_REPO):$(VERSION)
 
 $( shell mkdir -p bin )
@@ -41,18 +42,19 @@ milos:
 
 .PHONY: generate
 generate:
-#	@go generate $(REPO_PATH)/storage/ent/
+	GOFLAGS=-mod=mod go generate ./...
+	swag init -d internal/bee,internal/infra/http/handlers/documents -g beeServer.go
 
 build: generate bin/bee
 
 bin/bee:
 	@mkdir -p bin/
-	@go install -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/sample-bee
+	@go install -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/bee
 
 .PHONY: release-binary
 release-binary: LD_FLAGS = "-w -X main.version=$(VERSION) -extldflags \"-static\""
 release-binary: generate
-	@go build -o /go/bin/sample-bee -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/sample-bee
+	@go build -o /go/bin/bee -v -ldflags $(LD_FLAGS) $(REPO_PATH)/cmd/bee
 
 docker-compose.override.yaml:
 	@cd deployments; \

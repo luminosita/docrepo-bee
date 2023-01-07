@@ -3,12 +3,16 @@ package repositories
 import (
 	"bufio"
 	"context"
+	"github.com/google/wire"
 	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	"github.com/luminosita/honeycomb/pkg/infra/db/mongodb"
 	"github.com/luminosita/honeycomb/pkg/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 )
+
+var PutWireSet = wire.NewSet(NewPutDocumentRepository,
+	wire.Bind(new(documents.PutDocumentRepositorer), new(*PutDocumentRepository)))
 
 type PutDocumentRepository struct {
 	ctx context.Context

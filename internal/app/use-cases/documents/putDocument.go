@@ -3,15 +3,19 @@ package documents
 import (
 	"errors"
 	"fmt"
+	"github.com/google/wire"
 	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 )
+
+var PutWireSet = wire.NewSet(NewPutDocument,
+	wire.Bind(new(documents2.PutDocumenter), new(*PutDocument)))
 
 type PutDocument struct {
 	repo documents.PutDocumentRepositorer
 }
 
-func NewPutDocument(r documents.PutDocumentRepositorer) documents2.PutDocumenter {
+func NewPutDocument(r documents.PutDocumentRepositorer) *PutDocument {
 	return &PutDocument{
 		repo: r,
 	}
