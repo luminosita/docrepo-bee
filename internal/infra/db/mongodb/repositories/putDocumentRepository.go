@@ -3,7 +3,7 @@ package repositories
 import (
 	"bufio"
 	"context"
-	"github.com/luminosita/docrepo-bee/internal/interfaces/respositories/documents"
+	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	"github.com/luminosita/honeycomb/pkg/infra/db/mongodb"
 	"github.com/luminosita/honeycomb/pkg/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"

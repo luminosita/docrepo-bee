@@ -1,3 +1,4 @@
+//go:generate mockgen -destination=./mocks/mock_getDocumenter.go -package=mocks . GetDocumenter
 package documents
 
 import (
@@ -5,11 +6,11 @@ import (
 	"io"
 )
 
-type GetDocumenterRequest = struct {
+type GetDocumenterRequest struct {
 	DocumentId string
 }
 
-type GetDocumenterResponse = struct {
+type GetDocumenterResponse struct {
 	Name   string
 	Size   int64
 	Reader io.Reader

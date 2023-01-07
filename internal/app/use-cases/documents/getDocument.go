@@ -1,7 +1,9 @@
 package documents
 
 import (
-	"github.com/luminosita/docrepo-bee/internal/interfaces/respositories/documents"
+	"errors"
+	"fmt"
+	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 )
 
@@ -17,6 +19,12 @@ func NewGetDocument(r documents.GetDocumentRepositorer) documents2.GetDocumenter
 
 func (d *GetDocument) Execute(
 	docData *documents2.GetDocumenterRequest) (*documents2.GetDocumenterResponse, error) {
+
+	if docData == nil || len(docData.DocumentId) == 0 {
+		//TODO: Externalize
+		return nil, errors.New(fmt.Sprintf("Bad request: %+v", docData))
+	}
+
 	data := &documents.GetDocumentRepositorerRequest{
 		DocumentId: docData.DocumentId,
 	}

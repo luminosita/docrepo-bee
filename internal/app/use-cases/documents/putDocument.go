@@ -1,7 +1,9 @@
 package documents
 
 import (
-	"github.com/luminosita/docrepo-bee/internal/interfaces/respositories/documents"
+	"errors"
+	"fmt"
+	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 )
 
@@ -17,6 +19,11 @@ func NewPutDocument(r documents.PutDocumentRepositorer) documents2.PutDocumenter
 
 func (d *PutDocument) Execute(
 	docData *documents2.PutDocumenterRequest) (*documents2.PutDocumenterResponse, error) {
+
+	if docData == nil || len(docData.Name) == 0 || docData.Size <= 0 || docData.Reader == nil {
+		return nil, errors.New(fmt.Sprintf("Bad request: %+v", docData))
+	}
+
 	data := &documents.PutDocumentRepositorerRequest{
 		Name:   docData.Name,
 		Size:   docData.Size,

@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"context"
-	"github.com/luminosita/docrepo-bee/internal/interfaces/respositories/documents"
+	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	"github.com/luminosita/honeycomb/pkg/infra/db/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

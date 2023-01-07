@@ -1,3 +1,4 @@
+//go:generate mockgen -destination=./mocks/mock_putDocumenter.go -package=mocks . PutDocumenter
 package documents
 
 import (
@@ -5,12 +6,12 @@ import (
 	"io"
 )
 
-type PutDocumenterRequest = struct {
+type PutDocumenterRequest struct {
 	Name   string
 	Size   int64
 	Reader io.Reader
 }
-type PutDocumenterResponse = struct {
+type PutDocumenterResponse struct {
 	DocumentId string
 }
 
