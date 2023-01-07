@@ -1,8 +1,9 @@
 package documents
 
 import (
-	"github.com/luminosita/honeycomb/pkg/http"
-	"github.com/luminosita/sample-bee/internal/interfaces/use-cases/documents"
+	"github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
+	"github.com/luminosita/honeycomb/pkg/http/ctx"
+	"github.com/luminosita/honeycomb/pkg/log"
 )
 
 type GetDocumentHandler struct {
@@ -16,7 +17,7 @@ func NewGetDocumentHandler(cd documents.GetDocumenter) *GetDocumentHandler {
 }
 
 // GetDocument godoc
-// @Summary      Show something
+// @Summary      Retrieves document for repository
 // @Description  Get Document By ID
 // @Tags         documents
 // @Accept       json
@@ -27,16 +28,16 @@ func NewGetDocumentHandler(cd documents.GetDocumenter) *GetDocumentHandler {
 // @Failure      404  {object}  error
 // @Failure      500  {object}  error
 // @Router       /documents/{id} [get]
-func (h *GetDocumentHandler) Handle(req *http.HttpRequest) (*http.HttpResponse, error) {
-	documentId := req.Params["id"]
+func (h *GetDocumentHandler) Handle(ctx *ctx.Ctx) error {
+	documentId := ctx.Params["id"]
+	log.Log().Infof("GetDocumentHandler %s", documentId)
 
 	res, err := h.cd.Execute(&documents.GetDocumenterRequest{
 		DocumentId: documentId,
 	})
-
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return http.Ok(res.Document), nil
+	return ctx.SendStream(res.Name, res.Reader, int(res.Size))
 }

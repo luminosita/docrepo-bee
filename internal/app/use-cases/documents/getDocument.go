@@ -1,8 +1,8 @@
 package documents
 
 import (
-	"github.com/luminosita/sample-bee/internal/interfaces/respositories/documents"
-	documents2 "github.com/luminosita/sample-bee/internal/interfaces/use-cases/documents"
+	"github.com/luminosita/docrepo-bee/internal/interfaces/respositories/documents"
+	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 )
 
 type GetDocument struct {
@@ -16,9 +16,9 @@ func NewGetDocument(r documents.GetDocumentRepositorer) documents2.GetDocumenter
 }
 
 func (d *GetDocument) Execute(
-	documentData *documents2.GetDocumenterRequest) (*documents2.GetDocumenterResponse, error) {
+	docData *documents2.GetDocumenterRequest) (*documents2.GetDocumenterResponse, error) {
 	data := &documents.GetDocumentRepositorerRequest{
-		DocumentID: documentData.DocumentId,
+		DocumentId: docData.DocumentId,
 	}
 
 	res, err := d.repo.GetDocument(data)
@@ -28,6 +28,8 @@ func (d *GetDocument) Execute(
 	}
 
 	return &documents2.GetDocumenterResponse{
-		Document: res.Document,
+		Name:   res.Name,
+		Size:   res.Size,
+		Reader: res.Reader,
 	}, nil
 }

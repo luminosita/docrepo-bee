@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Click on the "Choose File" button to upload a file:</p>
+
+<form action="/api/v1/documents/" method="post" enctype="multipart/form-data">
+    <input type="file" id="document" name="document">
+    <input type="submit">
+</form>
+
+<p>Click on the "Submit" button to download a file:</p>
+
+<a href="/api/v1/documents/63b8d2e8bb1d68104263e259" download>download me</a>
+
+</body>
+</html>

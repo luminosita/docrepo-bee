@@ -1,6 +1,6 @@
 config:
-  - name: dev-config
-    path: "configs/config.dev.yaml"
+  - name: config
+    path: "configs/config.yaml"
 fiber:
   - name: fiber                                              # Required
     port: 8080                                             # Required
@@ -11,9 +11,9 @@ fiber:
       enabled: true                                        # Optional, default: false
     docs:
       enabled: true
-#mongo:
-#  - name: "bee-mongo"                            # Required
-#    enabled: true                               # Required
-#    simpleURI: "mongodb://localhost:27017"      # Required
-#    database:
-#      - name: "bee"
+mongo:
+  - name: "bee-mongo"                            # Required
+    enabled: true                               # Required
+    simpleURI: "mongodb://localhost:27017"      # Required
+    database:
+      - name: "bee"

@@ -2,8 +2,11 @@ package repositories
 
 import (
 	"context"
-	"github.com/luminosita/sample-bee/internal/infra/db/mongodb"
-	"github.com/luminosita/sample-bee/internal/interfaces/respositories/documents"
+	"github.com/luminosita/docrepo-bee/internal/interfaces/respositories/documents"
+	"github.com/luminosita/honeycomb/pkg/infra/db/mongodb"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type GetDocumentRepository struct {
@@ -18,8 +21,36 @@ func NewGetDocumentRepository(ctx context.Context) *GetDocumentRepository {
 
 func (r *GetDocumentRepository) GetDocument(
 	docData *documents.GetDocumentRepositorerRequest) (*documents.GetDocumentRepositorerResponse, error) {
-	col := mongodb.GetDbCollection(r.ctx)
-	_ = col.FindOne(r.ctx, docData)
 
-	return nil, nil
+	bucket := mongodb.GetDbBucket(DOCUMENTS)
+	fsFiles := bucket.GetFilesCollection()
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	docId, err := primitive.ObjectIDFromHex(docData.DocumentId)
+	if err != nil {
+		return nil, err
+	}
+
+	//check if document with specified documentId exists
+	var results bson.M
+	err = fsFiles.FindOne(ctx, bson.M{"_id": docId}).Decode(&results)
+	if err != nil {
+		return nil, err
+	}
+
+	//Close() method for stream is not called. Handler is expected to call Close() since
+	//DownloadStream implementes Closer interface
+	dStream, err := bucket.OpenDownloadStream(docId)
+	if err != nil {
+		return nil, err
+	}
+
+	file := dStream.GetFile()
+
+	return &documents.GetDocumentRepositorerResponse{
+		Name:   file.Name,
+		Size:   file.Length,
+		Reader: dStream,
+	}, nil
 }

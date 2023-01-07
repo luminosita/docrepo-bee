@@ -1,12 +1,15 @@
 package documents
 
-import "github.com/luminosita/sample-bee/internal/domain/entities"
+import "io"
 
 type GetDocumentRepositorerRequest = struct {
-	DocumentID string
+	DocumentId string
 }
+
 type GetDocumentRepositorerResponse = struct {
-	Document *entities.Document
+	Name   string
+	Size   int64
+	Reader io.Reader
 }
 
 type GetDocumentRepositorer interface {

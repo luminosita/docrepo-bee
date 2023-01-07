@@ -2,14 +2,17 @@ package documents
 
 import (
 	"github.com/luminosita/honeycomb/pkg/interfaces"
-	"github.com/luminosita/sample-bee/internal/domain/entities"
+	"io"
 )
 
 type GetDocumenterRequest = struct {
 	DocumentId string
 }
+
 type GetDocumenterResponse = struct {
-	Document *entities.Document
+	Name   string
+	Size   int64
+	Reader io.Reader
 }
 
 type GetDocumenter interface {

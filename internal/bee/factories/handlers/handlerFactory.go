@@ -2,22 +2,17 @@ package handlers
 
 import (
 	"context"
+	use_cases "github.com/luminosita/docrepo-bee/internal/bee/factories/use-cases"
+	"github.com/luminosita/docrepo-bee/internal/infra/http/handlers/documents"
 	"github.com/luminosita/honeycomb/pkg/http/handlers"
-	use_cases "github.com/luminosita/sample-bee/internal/bee/factories/use-cases"
-	"github.com/luminosita/sample-bee/internal/infra/http/handlers/documents"
 )
 
 func MakeGetDocumentHandler(ctx context.Context) handlers.Handler {
 	useCase := use_cases.MakeGetDocument(ctx)
-	return documents.NewGetDocumentHandler(useCase)
+	return documents.NewGetDocumentHandler(useCase).Handle
 }
 
-func MakeGetAllDocumentsHandler(ctx context.Context) handlers.Handler {
-	useCase := use_cases.MakeGetAllDocuments(ctx)
-	return documents.NewGetAllDocumentsHandler(useCase)
-}
-
-func MakeCreateDocumentHandler(ctx context.Context) handlers.Handler {
-	useCase := use_cases.MakeCreateDocument(ctx)
-	return documents.NewCreateDocumentHandler(useCase)
+func MakePutDocumentHandler(ctx context.Context) handlers.Handler {
+	useCase := use_cases.MakePutDocument(ctx)
+	return documents.NewPutDocumentHandler(useCase).Handle
 }
