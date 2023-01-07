@@ -21,7 +21,7 @@ func NewPutDocumentRepository(ctx context.Context) *PutDocumentRepository {
 }
 
 func (r *PutDocumentRepository) PutDocument(
-	docData *documents.PutDocumentRepositorerRequest) (*documents.PutDocumentRepositorerResponse, error) {
+	docData *documents.PutDocumentRepositorerRequest) (res *documents.PutDocumentRepositorerResponse, err error) {
 
 	bucket := mongodb.GetDbBucket(DOCUMENTS)
 
@@ -31,8 +31,8 @@ func (r *PutDocumentRepository) PutDocument(
 	if err != nil {
 		return nil, err
 	}
-	defer func() error {
-		return uploadStream.Close()
+	defer func() {
+		err = uploadStream.Close()
 	}()
 
 	reader := bufio.NewReader(docData.Reader)

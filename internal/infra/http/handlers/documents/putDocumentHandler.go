@@ -29,7 +29,7 @@ func NewPutDocumentHandler(cd documents.PutDocumenter) *PutDocumentHandler {
 // @Failure      404  {object}  error
 // @Failure      500  {object}  error
 // @Router       /documents [post]
-func (h *PutDocumentHandler) Handle(ctx *ctx.Ctx) error {
+func (h *PutDocumentHandler) Handle(ctx *ctx.Ctx) (err error) {
 	formFile, err := ctx.FormFile(DOCUMENT_FIELD_KEY)
 	if err != nil {
 		return err
@@ -43,8 +43,8 @@ func (h *PutDocumentHandler) Handle(ctx *ctx.Ctx) error {
 	if err != nil {
 		return err
 	}
-	defer func() error {
-		return file.Close()
+	defer func() {
+		err = file.Close()
 	}()
 
 	res, err := h.cd.Execute(&documents.PutDocumenterRequest{
