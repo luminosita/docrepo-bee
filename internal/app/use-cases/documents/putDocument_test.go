@@ -3,9 +3,9 @@ package documents
 import (
 	"bytes"
 	"github.com/golang/mock/gomock"
+	"github.com/luminosita/common-bee/pkg/utils"
 	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
-	"github.com/luminosita/honeycomb/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

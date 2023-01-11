@@ -3,10 +3,10 @@ package documents
 import (
 	"bufio"
 	"github.com/google/wire"
+	"github.com/luminosita/common-bee/pkg/log"
 	"github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 	"github.com/luminosita/honeycomb/pkg/http/ctx"
 	"github.com/luminosita/honeycomb/pkg/http/handlers"
-	"github.com/luminosita/honeycomb/pkg/log"
 	"io"
 )
 

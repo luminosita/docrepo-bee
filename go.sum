@@ -391,8 +391,8 @@ github.com/lightstep/lightstep-tracer-common/golang/gogo v0.0.0-20190605223551-b
 github.com/lightstep/lightstep-tracer-go v0.18.1/go.mod h1:jlF1pusYV4pidLvZ+XD0UBX0ZE6WURAspgAczcDHrL4=
 github.com/luminosita/common-bee v0.0.0-20230111003335-23cea12824ba h1:eM7G8njvzslGsdVzx7P5rDKs7Lds9aDES/dYX0jQJDc=
 github.com/luminosita/common-bee v0.0.0-20230111003335-23cea12824ba/go.mod h1:xqw/R2E4I15A5eBT98S4G15TwJB9V4BzpaShWNd9jtc=
-github.com/luminosita/honeycomb v0.0.0-20230110205932-93d14b07bc28 h1:T9l3pXoR9b05HDbqgRfLz+9Zvk4np+67EBIOPuMRSuE=
-github.com/luminosita/honeycomb v0.0.0-20230110205932-93d14b07bc28/go.mod h1:qkONha0yj1oBe3LwTFDk40EnmD9YqIE2C0eCkKf2FU0=
+github.com/luminosita/honeycomb v0.0.0-20230111004359-055d7d41ac1c h1:LUtJaIN+f7MEFsw1FrRpYTI9YvaxUFyRI8hyXO8vkP8=
+github.com/luminosita/honeycomb v0.0.0-20230111004359-055d7d41ac1c/go.mod h1:yv9jGmMBARDtuHL1LMFCvo5BvfIctu++R9eIbGx3Whk=
 github.com/lyft/protoc-gen-validate v0.0.13/go.mod h1:XbGvPuh87YZc5TdIa2/I4pLk0QoUACkjt2znoq26NVQ=
 github.com/magiconair/properties v1.8.6 h1:5ibWZ6iY0NctNGWo87LalDlEZ6R41TqbbDamhfG/Qzo=
 github.com/magiconair/properties v1.8.6/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
