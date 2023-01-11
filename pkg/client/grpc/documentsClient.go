@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	grpc2 "github.com/luminosita/common-bee/pkg/grpc"
 	pb "github.com/luminosita/docrepo-bee/api/gen/v1"
 	"io"
@@ -56,13 +57,16 @@ func (c *Client) PutDocument(ctx context.Context, docInfo *DocumentInfo, r io.Re
 		return "", err
 	}
 
-	grpc2.CopyToClientStream(r, stream, func(buffer []byte) any {
+	err = grpc2.CopyToMessageStream(r, stream, func(buffer []byte) any {
 		return &pb.PutDocumentRequest{
 			Data: &pb.PutDocumentRequest_ChunkData{
 				ChunkData: buffer,
 			},
 		}
 	})
+	if err != nil {
+		return "", err
+	}
 
 	res, err := stream.CloseAndRecv()
 	if err != nil {
@@ -97,9 +101,20 @@ func (c *Client) GetDocument(ctx context.Context, id string) (*DocumentInfo, io.
 
 	reply := new(pb.GetDocumentReply)
 
-	go grpc2.CopyFromClientStream(w, res, reply, func(reply any) []byte {
-		return reply.(*pb.GetDocumentReply).GetData().(*pb.GetDocumentReply_ChunkData).ChunkData
-	})
+	go func() {
+		err := grpc2.CopyFromMessageStream(w, res, reply, func(reply any) []byte {
+			return reply.(*pb.GetDocumentReply).GetData().(*pb.GetDocumentReply_ChunkData).ChunkData
+		})
+		if err != nil {
+			fmt.Printf("unexpected error occuried: %+v", err)
+			_ = w.CloseWithError(err)
+		}
+		_ = w.Close()
+		err = res.CloseSend()
+		if err != nil {
+			fmt.Printf("unexpected error occuried: %+v", err)
+		}
+	}()
 
 	return docInfo, r, nil
 }

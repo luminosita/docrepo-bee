@@ -3,7 +3,6 @@ package grpc
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/luminosita/common-bee/pkg/utils"
 	pb "github.com/luminosita/docrepo-bee/api/gen/v1"
@@ -105,10 +104,9 @@ func setupTest(m *Mock) func() {
 	server.PutDocumenter = m.pd
 
 	ctx := context.Background()
-	connCtx, _ := context.WithTimeout(ctx, time.Second*5)
 
 	conn, err := grpc.DialContext(
-		connCtx,
+		ctx,
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
@@ -120,6 +118,7 @@ func setupTest(m *Mock) func() {
 	m.c = NewClient(pb.NewDocumentsClient(conn))
 
 	return func() {
+		_ = conn.Close()
 	}
 }
 
@@ -135,7 +134,6 @@ func TestGetDocumentInfo(t *testing.T) {
 	m.gdi.EXPECT().Execute(gomock.Eq(repoRequest)).Return(repoResponse, nil)
 
 	docInfo, err := m.c.GetDocumentInfo(context.Background(), "123")
-	fmt.Println(err)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, docInfo)

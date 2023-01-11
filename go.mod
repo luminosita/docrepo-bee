@@ -10,8 +10,8 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/wire v0.5.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0
-	github.com/luminosita/common-bee v0.0.0-20230111003335-23cea12824ba
-	github.com/luminosita/honeycomb v0.0.0-20230111004359-055d7d41ac1c
+	github.com/luminosita/common-bee v0.0.0-20230111124120-39c744769ed2
+	github.com/luminosita/honeycomb v0.0.0-20230111124845-de30fb539332
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/swag v1.8.9

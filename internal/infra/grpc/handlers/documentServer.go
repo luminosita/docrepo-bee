@@ -30,7 +30,7 @@ func NewDocumentsServer(gdi documents2.GetDocumentInfoer,
 	}
 }
 
-func (s *DocumentsServer) GetDocumentInfo(ctx context.Context,
+func (s *DocumentsServer) GetDocumentInfo(_ context.Context,
 	req *pb.GetDocumentInfoRequest) (*pb.GetDocumentInfoReply, error) {
 
 	res, err := s.GetDocumentInfoer.Execute(&documents2.GetDocumentInfoerRequest{
@@ -71,13 +71,16 @@ func (s *DocumentsServer) GetDocument(req *pb.GetDocumentRequest,
 			"unable to send document info: %v", serverErr))
 	}
 
-	grpc2.CopyToServerStream(res.Reader, srv, func(buffer []byte) any {
+	err = grpc2.CopyToMessageStream(res.Reader, srv, func(buffer []byte) any {
 		return &pb.PutDocumentRequest{
 			Data: &pb.PutDocumentRequest_ChunkData{
 				ChunkData: buffer,
 			},
 		}
 	})
+	if err != nil {
+		return log.LogError(status.Errorf(codes.Unknown, "cannot copy from message stream"))
+	}
 
 	return nil
 }
@@ -97,9 +100,12 @@ func (s *DocumentsServer) PutDocument(srv pb.Documents_PutDocumentServer) error 
 
 	reply := new(pb.GetDocumentReply)
 
-	grpc2.CopyFromServerStream(res.Writer, srv, reply, func(reply any) []byte {
+	err = grpc2.CopyFromMessageStream(res.Writer, srv, reply, func(reply any) []byte {
 		return reply.(*pb.GetDocumentReply).GetData().(*pb.GetDocumentReply_ChunkData).ChunkData
 	})
+	if err != nil {
+		return log.LogError(status.Errorf(codes.Unknown, "cannot copy from message stream"))
+	}
 
 	err = res.Writer.Close()
 	if err != nil {
