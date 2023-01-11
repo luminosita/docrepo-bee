@@ -2,8 +2,11 @@ package bee
 
 import (
 	"context"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	proto "github.com/luminosita/docrepo-bee/api/gen/v1"
 	"github.com/luminosita/honeycomb/pkg/http"
 	"github.com/luminosita/honeycomb/pkg/server"
+	"google.golang.org/grpc"
 )
 
 type Config struct {
@@ -53,17 +56,23 @@ func (bs *BeeServer) OverrideConfigItems() map[string]string {
 func (*BeeServer) Routes(ctx context.Context) []*http.Route {
 	routes := make([]*http.Route, 0)
 
-	//router.get('/posts', expressRouteAdapter(makeGetLatestPostsController()))
-	//router.get('/posts/:id', expressRouteAdapter(makeGetPostByIdController()))
-	//router.post('/posts', authMiddleware, expressRouteAdapter(makeCreatePostController()))
-	//router.patch('/posts/:id', authMiddleware, expressRouteAdapter(makeUpdatePostController()))
-	//router.delete('/posts/:id', authMiddleware, expressRouteAdapter(makeDeletePostController()))
-
 	routes = append(routes, &http.Route{Type: http.STATIC, Path: "/assets"})
+
 	routes = append(routes, &http.Route{
 		Type: http.GET, Path: "/documents/:id", Handler: MakeGetDocumentHandler(ctx)})
+	routes = append(routes, &http.Route{
+		Type: http.GET, Path: "/documents/:id/info", Handler: MakeGetDocumentInfoHandler(ctx)})
 	routes = append(routes, &http.Route{
 		Type: http.POST, Path: "/documents", Handler: MakePutDocumentHandler(ctx)})
 
 	return routes
+}
+
+func (*BeeServer) GrpcRegFunc(server *grpc.Server) {
+	proto.RegisterDocumentsServer(server, MakeGrpcDocumentServer(context.Background()))
+}
+
+func (*BeeServer) GwRegFunc(ctx context.Context, mux *runtime.ServeMux,
+	endpoint string, opts []grpc.DialOption) error {
+	return proto.RegisterDocumentsHandlerFromEndpoint(ctx, mux, endpoint, opts)
 }

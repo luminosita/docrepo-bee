@@ -10,8 +10,9 @@ type Mock struct {
 	t    *testing.T
 	ctrl *gomock.Controller
 
-	pdr *mocks.MockPutDocumentRepositorer
-	gdr *mocks.MockGetDocumentRepositorer
+	pdr  *mocks.MockPutDocumentRepositorer
+	gdr  *mocks.MockGetDocumentRepositorer
+	gidr *mocks.MockGetDocumentInfoRepositorer
 }
 
 func newMock(t *testing.T) (m *Mock) {
@@ -21,6 +22,7 @@ func newMock(t *testing.T) (m *Mock) {
 
 	m.pdr = mocks.NewMockPutDocumentRepositorer(m.ctrl)
 	m.gdr = mocks.NewMockGetDocumentRepositorer(m.ctrl)
+	m.gidr = mocks.NewMockGetDocumentInfoRepositorer(m.ctrl)
 
 	return
 }

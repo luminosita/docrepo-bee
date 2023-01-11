@@ -8,7 +8,7 @@ import (
 	"github.com/luminosita/honeycomb/pkg/log"
 )
 
-var GetWireSet = wire.NewSet(NewGetDocumentHandler,
+var GetDocumentWireSet = wire.NewSet(NewGetDocumentHandler,
 	wire.Bind(new(handlers.Handler), new(*GetDocumentHandler)))
 
 type GetDocumentHandler struct {

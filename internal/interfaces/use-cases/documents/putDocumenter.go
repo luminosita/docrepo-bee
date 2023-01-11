@@ -7,12 +7,12 @@ import (
 )
 
 type PutDocumenterRequest struct {
-	Name   string
-	Size   int64
-	Reader io.Reader
+	Name string
+	Size int64
 }
 type PutDocumenterResponse struct {
 	DocumentId string
+	Writer     io.WriteCloser
 }
 
 type PutDocumenter interface {

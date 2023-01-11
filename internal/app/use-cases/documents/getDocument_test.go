@@ -5,6 +5,7 @@ import (
 	"github.com/luminosita/docrepo-bee/internal/interfaces/repositories/documents"
 	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 	"github.com/stretchr/testify/assert"
+	"io"
 	"strings"
 	"testing"
 )
@@ -15,7 +16,7 @@ func TestGetDocumentGoodRequest(t *testing.T) {
 
 	d := NewGetDocument(m.gdr)
 
-	reader := strings.NewReader("test")
+	reader := io.NopCloser(strings.NewReader("test"))
 
 	repoRequest := &documents.GetDocumentRepositorerRequest{DocumentId: "pera"}
 	repoResponse := &documents.GetDocumentRepositorerResponse{Name: "laza", Size: 1234, Reader: reader}

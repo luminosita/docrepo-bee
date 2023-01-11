@@ -6,12 +6,12 @@ import (
 )
 
 type PutDocumentRepositorerRequest struct {
-	Name   string
-	Size   int64
-	Reader io.Reader
+	Name string
+	Size int64
 }
 type PutDocumentRepositorerResponse struct {
 	DocumentId string
+	Writer     io.WriteCloser
 }
 
 type PutDocumentRepositorer interface {

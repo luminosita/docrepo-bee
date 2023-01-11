@@ -13,7 +13,7 @@ type GetDocumenterRequest struct {
 type GetDocumenterResponse struct {
 	Name   string
 	Size   int64
-	Reader io.Reader
+	Reader io.ReadCloser
 }
 
 type GetDocumenter interface {

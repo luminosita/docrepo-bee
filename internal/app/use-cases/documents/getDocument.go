@@ -8,7 +8,7 @@ import (
 	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 )
 
-var GetWireSet = wire.NewSet(NewGetDocument,
+var GetDocumentWireSet = wire.NewSet(NewGetDocument,
 	wire.Bind(new(documents2.GetDocumenter), new(*GetDocument)))
 
 type GetDocument struct {

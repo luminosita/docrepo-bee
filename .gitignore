@@ -6,3 +6,4 @@
 /bin/
 /internal/interfaces/use-cases/documents/mocks/
 /internal/interfaces/repositories/documents/mocks/
+/api/gen/

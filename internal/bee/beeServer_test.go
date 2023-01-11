@@ -14,7 +14,7 @@ func TestBeeServer(t *testing.T) {
 	routes := s.Routes(context.Background())
 
 	assert.NotNil(t, routes)
-	assert.Equal(t, 3, len(routes))
+	assert.Equal(t, 4, len(routes))
 
 	for _, v := range routes {
 		if v.Type != http.STATIC {

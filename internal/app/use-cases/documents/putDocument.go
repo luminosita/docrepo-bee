@@ -8,7 +8,7 @@ import (
 	documents2 "github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 )
 
-var PutWireSet = wire.NewSet(NewPutDocument,
+var PutDocumentWireSet = wire.NewSet(NewPutDocument,
 	wire.Bind(new(documents2.PutDocumenter), new(*PutDocument)))
 
 type PutDocument struct {
@@ -24,14 +24,13 @@ func NewPutDocument(r documents.PutDocumentRepositorer) *PutDocument {
 func (d *PutDocument) Execute(
 	docData *documents2.PutDocumenterRequest) (*documents2.PutDocumenterResponse, error) {
 
-	if docData == nil || len(docData.Name) == 0 || docData.Size <= 0 || docData.Reader == nil {
+	if docData == nil || len(docData.Name) == 0 || docData.Size <= 0 {
 		return nil, errors.New(fmt.Sprintf("Bad request: %+v", docData))
 	}
 
 	data := &documents.PutDocumentRepositorerRequest{
-		Name:   docData.Name,
-		Size:   docData.Size,
-		Reader: docData.Reader,
+		Name: docData.Name,
+		Size: docData.Size,
 	}
 
 	res, err := d.repo.PutDocument(data)
@@ -41,5 +40,6 @@ func (d *PutDocument) Execute(
 
 	return &documents2.PutDocumenterResponse{
 		DocumentId: res.DocumentId,
+		Writer:     res.Writer,
 	}, nil
 }

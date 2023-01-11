@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var GetWireSet = wire.NewSet(NewGetDocumentRepository,
+var GetDocumentWireSet = wire.NewSet(NewGetDocumentRepository,
 	wire.Bind(new(documents.GetDocumentRepositorer), new(*GetDocumentRepository)))
 
 type GetDocumentRepository struct {

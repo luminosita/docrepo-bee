@@ -12,7 +12,7 @@ type GetDocumentRepositorerRequest struct {
 type GetDocumentRepositorerResponse struct {
 	Name   string
 	Size   int64
-	Reader io.Reader
+	Reader io.ReadCloser
 }
 
 type GetDocumentRepositorer interface {

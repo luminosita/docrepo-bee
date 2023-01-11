@@ -1,4 +1,4 @@
-package bee
+package main
 
 import (
 	"fmt"

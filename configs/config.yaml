@@ -1,6 +1,7 @@
 config:
   server:
     baseUrl: "/api/v1"
+    access: restricted
     logger:
       level: "info"
       format: "json"

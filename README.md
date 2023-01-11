@@ -1,2 +1,12 @@
-# bee
-Atomic component of a honeybee architecture
+# Document Repository
+
+#### Generate Google Wire files
+```bash
+$ wire ./...
+```
+
+#### Generate gRPC files
+```bash
+$ buf --path api/v1
+```
+

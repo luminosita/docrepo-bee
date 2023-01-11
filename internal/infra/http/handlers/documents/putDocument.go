@@ -1,14 +1,16 @@
 package documents
 
 import (
+	"bufio"
 	"github.com/google/wire"
 	"github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
 	"github.com/luminosita/honeycomb/pkg/http/ctx"
 	"github.com/luminosita/honeycomb/pkg/http/handlers"
 	"github.com/luminosita/honeycomb/pkg/log"
+	"io"
 )
 
-var PutWireSet = wire.NewSet(NewPutDocumentHandler,
+var PutDocumentWireSet = wire.NewSet(NewPutDocumentHandler,
 	wire.Bind(new(handlers.Handler), new(*PutDocumentHandler)))
 
 const DOCUMENT_FIELD_KEY = "document"
@@ -53,10 +55,22 @@ func (h *PutDocumentHandler) Handle(ctx *ctx.Ctx) (err error) {
 	}()
 
 	res, err := h.cd.Execute(&documents.PutDocumenterRequest{
-		Name:   name,
-		Size:   formFile.Size,
-		Reader: file,
+		Name: name,
+		Size: formFile.Size,
 	})
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		err = res.Writer.Close()
+	}()
+
+	reader := bufio.NewReader(file)
+
+	buf := make([]byte, 3*1024) //the chunk size
+
+	_, err = io.CopyBuffer(res.Writer, reader, buf)
 	if err != nil {
 		return err
 	}

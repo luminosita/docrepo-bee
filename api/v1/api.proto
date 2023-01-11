@@ -1,10 +1,53 @@
 syntax = "proto3";
 
-package api;
+package api.v1;
 
-option go_package = "github.com/luminosita/sample-bee/api";
+import "google/protobuf/timestamp.proto";
 
-message Document {
-  string id = 1;
+option go_package = "api/v1/documents";
+
+service Documents {
+  // Sends a greeting
+  rpc GetDocumentInfo (GetDocumentInfoRequest) returns (GetDocumentInfoReply) {}
+  rpc GetDocument (GetDocumentRequest) returns (stream GetDocumentReply) {}
+  rpc PutDocument (stream PutDocumentRequest) returns (PutDocumentReply) {}
+}
+
+// The request message containing the user's name.
+message GetDocumentInfoRequest {
+  string documentId = 1;
+}
+
+// The response message containing the greetings
+message GetDocumentInfoReply {
+  DocumentInfo info = 1;
+  google.protobuf.Timestamp uploadDate = 2;
+}
+
+message GetDocumentRequest {
+  string documentId = 1;
+}
+
+message GetDocumentReply {
+  oneof data {
+    DocumentInfo info = 1;
+    bytes chunk_data = 2;
+  };
+}
+
+message PutDocumentRequest {
+  oneof data {
+    DocumentInfo info = 1;
+    bytes chunk_data = 2;
+  };
+}
+
+message DocumentInfo {
+  string name = 1;
+  int64  size = 2;
+}
+
+message PutDocumentReply {
+  string documentId = 1;
 }
 
