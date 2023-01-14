@@ -1,0 +1,11 @@
+version: v1
+name: buf.build/luminosita/docrepo-bee
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/envoyproxy/protoc-gen-validate

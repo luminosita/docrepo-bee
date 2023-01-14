@@ -1,0 +1,7 @@
+version: v1
+plugins:
+  # protoc-gen-go needs to be installed, generate go files based on proto files
+  - plugin: buf.build/protocolbuffers/go
+    out: .
+    opt:
+      - paths=source_relative

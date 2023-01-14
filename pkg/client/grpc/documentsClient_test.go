@@ -3,32 +3,30 @@ package grpc
 import (
 	"bytes"
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/luminosita/common-bee/pkg/utils"
-	pb "github.com/luminosita/docrepo-bee/api/gen/v1"
-	"github.com/luminosita/docrepo-bee/internal/infra/grpc/handlers"
-	"github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents"
-	"github.com/luminosita/docrepo-bee/internal/interfaces/use-cases/documents/mocks"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
+	"errors"
 	"io"
 	"log"
-	"net"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
+
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
+	"github.com/go-kratos/kratos/v2/middleware/validate"
+	kgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+	jwtv4 "github.com/golang-jwt/jwt/v4"
+	"github.com/golang/mock/gomock"
+	"github.com/luminosita/common-bee/pkg/utils"
+	pb "github.com/luminosita/docrepo-bee/api/documents/v1"
+	"github.com/luminosita/docrepo-bee/internal/interface/app/documents"
+	"github.com/luminosita/docrepo-bee/internal/interface/app/documents/mocks"
+	server2 "github.com/luminosita/docrepo-bee/internal/server"
+	"github.com/luminosita/docrepo-bee/internal/service"
+	"github.com/stretchr/testify/assert"
 )
 
 const addr = "localhost:9999"
-
-var (
-	server *handlers.DocumentsServer
-)
 
 type Mock struct {
 	t    *testing.T
@@ -49,67 +47,45 @@ func newMock(t *testing.T) (m *Mock) {
 	return
 }
 
-func setupServer(server *handlers.DocumentsServer, done chan os.Signal) {
-	listener, err := net.Listen("tcp", addr)
-	if err != nil {
-		log.Fatalf("net.Listen: %v", err)
-	}
-	var opts []grpc.ServerOption
+func setupServer(m *Mock, middleware ...middleware.Middleware) func() {
+	server := service.NewDocumentsServer(m.gdi, m.gd, m.pd)
 
-	grpcServer := grpc.NewServer(opts...)
-	pb.RegisterDocumentsServer(grpcServer, server)
-	reflection.Register(grpcServer)
+	var opts = []kgrpc.ServerOption{
+		kgrpc.Middleware(
+			middleware...,
+		),
+	}
+
+	opts = append(opts, kgrpc.Address(addr))
+
+	gs := kgrpc.NewServer(opts...)
+	pb.RegisterDocumentsServer(gs, server)
+
+	app := kratos.New(
+		kratos.Metadata(map[string]string{}),
+		kratos.Server(
+			gs,
+		),
+	)
 
 	go func() {
-		if err := grpcServer.Serve(listener); err != nil {
+		if err := app.Run(); err != nil {
 			log.Printf("grpcServer.Serve: %v", err)
 		}
 	}()
 
-	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	<-done
-	grpcServer.GracefulStop()
-	log.Printf("Server stopped")
-}
-
-func TestMain(m *testing.M) {
-	done := make(chan os.Signal, 1)
-
-	server = handlers.NewDocumentsServer(nil, nil, nil)
-
-	go func() {
-		setupServer(server, done)
-	}()
-
-	time.Sleep(1)
-
-	code := m.Run()
-
-	done <- os.Interrupt
-
-	os.Exit(code)
-}
-
-func setupTest(m *Mock) func() {
-	if m == nil {
-		panic("Mock not initialized")
+	return func() {
+		_ = app.Stop()
 	}
+}
 
-	m.pd = mocks.NewMockPutDocumenter(m.ctrl)
-	m.gd = mocks.NewMockGetDocumenter(m.ctrl)
-	m.gdi = mocks.NewMockGetDocumentInfoer(m.ctrl)
-
-	server.GetDocumentInfoer = m.gdi
-	server.GetDocumenter = m.gd
-	server.PutDocumenter = m.pd
-
-	ctx := context.Background()
-
-	conn, err := grpc.DialContext(
-		ctx,
-		addr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
+func setupClient(m *Mock, middleware ...middleware.Middleware) func() {
+	conn, err := kgrpc.DialInsecure(
+		context.Background(),
+		kgrpc.WithEndpoint(addr),
+		kgrpc.WithMiddleware(
+			middleware...,
+		),
 	)
 	if err != nil {
 		log.Fatalf("grpc.DialContext: %v", err)
@@ -122,10 +98,44 @@ func setupTest(m *Mock) func() {
 	}
 }
 
-func TestGetDocumentInfo(t *testing.T) {
-	m := newMock(t)
-	defer setupTest(m)()
+func setupTest(m *Mock, clientMid []middleware.Middleware, serverMid []middleware.Middleware) func() {
+	if m == nil {
+		panic("Mock not initialized")
+	}
 
+	m.pd = mocks.NewMockPutDocumenter(m.ctrl)
+	m.gd = mocks.NewMockGetDocumenter(m.ctrl)
+	m.gdi = mocks.NewMockGetDocumentInfoer(m.ctrl)
+
+	cleanupServer := setupServer(m, serverMid...)
+	cleanupClient := setupClient(m, clientMid...)
+
+	return func() {
+		cleanupServer()
+		cleanupClient()
+	}
+}
+
+func setupWithMiddleware(m *Mock, claims jwtv4.MapClaims, testMiddleware middleware.Middleware) func() {
+	serverMid := []middleware.Middleware{
+		jwt.Server(func(token *jwtv4.Token) (interface{}, error) {
+			return []byte(server2.SecretKey), nil
+		}, jwt.WithSigningMethod(jwtv4.SigningMethodHS256),
+			jwt.WithClaims(func() jwtv4.Claims { return claims })),
+		testMiddleware,
+	}
+
+	clientMid := []middleware.Middleware{
+		jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
+			return []byte(server2.SecretKey), nil
+		}, jwt.WithSigningMethod(jwtv4.SigningMethodHS256),
+			jwt.WithClaims(func() jwtv4.Claims { return claims })),
+	}
+
+	return setupTest(m, clientMid, serverMid)
+}
+
+func callGetDocumentInfo(t *testing.T, m *Mock) {
 	ttt := time.Unix(100, 10)
 
 	repoRequest := &documents.GetDocumentInfoerRequest{DocumentId: "123"}
@@ -142,10 +152,7 @@ func TestGetDocumentInfo(t *testing.T) {
 	assert.Equal(t, ttt.UTC(), docInfo.UploadDate)
 }
 
-func TestGetDocument(t *testing.T) {
-	m := newMock(t)
-	defer setupTest(m)()
-
+func callGetDocument(t *testing.T, m *Mock) {
 	s := "test test test"
 
 	reader := io.NopCloser(strings.NewReader(s))
@@ -168,9 +175,45 @@ func TestGetDocument(t *testing.T) {
 	assert.Equal(t, []byte(s), resBytes)
 }
 
+func TestGetDocumentInfo(t *testing.T) {
+	m := newMock(t)
+
+	serverMid := []middleware.Middleware{
+		func(handler middleware.Handler) middleware.Handler {
+			return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
+				return handler(ctx, req)
+			}
+		},
+	}
+
+	defer setupTest(m, nil, serverMid)()
+
+	callGetDocumentInfo(t, m)
+}
+
+func TestGetDocumentInfoBad(t *testing.T) {
+	m := newMock(t)
+
+	serverMid := []middleware.Middleware{validate.Validator()}
+
+	defer setupTest(m, nil, serverMid)()
+
+	_, err := m.c.GetDocumentInfo(context.Background(), "")
+
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "value length must be at least")
+}
+
+func TestGetDocument(t *testing.T) {
+	m := newMock(t)
+	defer setupTest(m, nil, nil)()
+
+	callGetDocument(t, m)
+}
+
 func TestPutDocument(t *testing.T) {
 	m := newMock(t)
-	defer setupTest(m)()
+	defer setupTest(m, nil, nil)()
 
 	s := "some test data"
 
@@ -191,4 +234,92 @@ func TestPutDocument(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, "123", docId)
 	assert.Equal(t, []byte(s), buffer.Bytes())
+}
+
+func TestJwt(t *testing.T) {
+	m := newMock(t)
+
+	tm := false
+
+	testMiddleware := func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
+			c, ok := jwt.FromContext(ctx)
+			assert.True(t, ok)
+			assert.Equal(t, "laza", c.(jwtv4.MapClaims)["sub"])
+			assert.Equal(t, "123", c.(jwtv4.MapClaims)["id"])
+
+			tm = true
+
+			return handler(ctx, req)
+		}
+	}
+
+	claims := jwtv4.MapClaims{
+		"sub": "laza",
+		"id":  "123",
+	}
+
+	defer setupWithMiddleware(m, claims, testMiddleware)()
+
+	callGetDocumentInfo(t, m)
+
+	assert.True(t, tm) //check if test method got called
+}
+
+func TestJwtForStream(t *testing.T) {
+	m := newMock(t)
+
+	tm := false
+
+	testMiddleware := func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
+			c, ok := jwt.FromContext(ctx)
+			assert.True(t, ok)
+			assert.Equal(t, "laza", c.(jwtv4.MapClaims)["sub"])
+			assert.Equal(t, "123", c.(jwtv4.MapClaims)["id"])
+
+			tm = true
+
+			return handler(ctx, req)
+		}
+	}
+
+	claims := jwtv4.MapClaims{
+		"sub": "laza",
+		"id":  "123",
+	}
+
+	defer setupWithMiddleware(m, claims, testMiddleware)()
+
+	callGetDocument(t, m)
+
+	assert.True(t, tm) //check if test method got called
+}
+
+func TestJwtBad(t *testing.T) {
+	m := newMock(t)
+
+	tm := false
+
+	testMiddleware := func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
+			c, ok := jwt.FromContext(ctx)
+			assert.True(t, ok)
+			assert.Empty(t, c.(jwtv4.MapClaims))
+
+			tm = true
+
+			return nil, errors.New("jwt bad test")
+		}
+	}
+
+	claims := jwtv4.MapClaims{}
+
+	defer setupWithMiddleware(m, claims, testMiddleware)()
+
+	_, err := m.c.GetDocumentInfo(context.Background(), "123456")
+
+	assert.NotNil(t, err)
+	assert.True(t, tm) //check if test method got called
+	assert.ErrorContains(t, err, "jwt bad test")
 }

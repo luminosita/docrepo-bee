@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	grpc2 "github.com/luminosita/common-bee/pkg/grpc"
-	pb "github.com/luminosita/docrepo-bee/api/gen/v1"
+	"github.com/luminosita/common-bee/pkg/log"
+	pb "github.com/luminosita/docrepo-bee/api/documents/v1"
 	"io"
 	"time"
 )
@@ -89,7 +89,7 @@ func (c *Client) GetDocument(ctx context.Context, id string) (*DocumentInfo, io.
 
 	rInfo := recv.GetInfo()
 	if rInfo == nil {
-		return nil, nil, errors.New("Invalid or malformatted document info sent from server")
+		return nil, nil, log.LogErrorf("Invalid or malformatted document info sent from server")
 	}
 
 	docInfo := &DocumentInfo{

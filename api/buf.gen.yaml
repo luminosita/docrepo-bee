@@ -1,0 +1,26 @@
+version: v1
+plugins:
+  # protoc-gen-go needs to be installed, generate go files based on proto files
+  - plugin: buf.build/protocolbuffers/go
+    out: .
+    opt:
+      - paths=source_relative
+  # protoc-gen-go-grpc needs to be installed, generate grpc go files based on proto files
+  - plugin: buf.build/grpc/go
+    out: .
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
+  # protoc-gen-grpc-gateway needs to be installed, generate grpc-gateway go files based on proto files
+  - name: grpc-gateway
+    out: .
+    opt:
+      - paths=source_relative
+  # protoc-gen-openapiv2 needs to be installed, generate swagger config files based on proto files
+  - plugin: buf.build/grpc-ecosystem/openapiv2
+    out: .
+  # protoc-gen-validate needs to be installed, generate validation files based on proto files
+  - plugin: buf.build/bufbuild/validate-go
+    out: .
+    opt:
+      - paths=source_relative
